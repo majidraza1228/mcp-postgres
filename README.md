@@ -1,343 +1,435 @@
-# PostgreSQL MCP Project
+# PostgreSQL MCP Server
 
-A complete solution for connecting GitHub Copilot to PostgreSQL databases using the Model Context Protocol (MCP).
+**Natural Language PostgreSQL Queries with LLM Integration**
 
-## Overview
+Query your PostgreSQL database using plain English powered by GitHub Copilot. Create tables, views, stored procedures, and execute complex queries without writing SQL.
 
-This project consists of two main components:
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://www.typescriptlang.org/)
 
-1. **MCP Server** - A FastAPI-based server that provides database operations through MCP tools
-2. **VS Code Extension** - A VS Code extension that runs the MCP server and integrates with GitHub Copilot
+---
 
-## Features
+## 🚀 Quick Start
 
-- Execute SQL queries directly from GitHub Copilot chat
-- List all tables in your database
-- Describe table structures
-- Create tables and stored procedures
-- Analyze query execution plans
-- Get table indexes
-- Execute any SQL statement (INSERT, UPDATE, DELETE, etc.)
-
-## Project Structure
-
-```
-postgres-mcp-project/
-├── mcp-server/              # FastAPI MCP server
-│   ├── server.py           # Main server implementation
-│   ├── config.py           # Configuration management
-│   ├── requirements.txt    # Python dependencies
-│   └── .env.example        # Example environment variables
-│
-├── vscode-extension/       # VS Code extension
-│   ├── src/
-│   │   └── extension.ts    # Extension implementation
-│   ├── package.json        # Extension manifest
-│   └── tsconfig.json       # TypeScript configuration
-│
-└── README.md              # This file
-```
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.8 or higher
-- Node.js 18 or higher
-- PostgreSQL database
-- VS Code with GitHub Copilot extension
-
-### Installation
-
-#### Step 1: Set up the MCP Server
+**30 seconds to natural language SQL:**
 
 ```bash
-cd mcp-server
+# 1. Clone and install
+git clone https://github.com/syedmajidraza/mcp-postgres.git
+cd mcp-postgres
+./install.sh
 
-# Create a virtual environment
-python3 -m venv venv
+# 2. Configure database
+nano ~/.postgres-mcp/mcp-server/.env
 
-# Activate virtual environment
-# On macOS/Linux:
-source venv/bin/activate
-# On Windows:
-# venv\Scripts\activate
+# 3. Install VS Code extension
+# Cmd+Shift+P → "Extensions: Install from VSIX" → Select .vsix file
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Create .env file from example
-cp .env.example .env
-
-# Edit .env with your database credentials
-nano .env
+# 4. Start using
+# Open Copilot Chat: @postgres show tables
 ```
 
-#### Step 2: Configure Database Connection
+📖 **Detailed Guide:** [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md)
 
-Edit the `.env` file with your PostgreSQL connection details:
+---
+
+## ✨ Features
+
+- 🤖 **Natural Language to SQL** - Ask questions in plain English, powered by GitHub Copilot LLM
+- 🔧 **8 PostgreSQL Tools** - Complete database operations via MCP protocol
+- 🎛️ **VS Code Extension** - Start/stop/status controls with status bar integration
+- 🧠 **Schema-Aware** - LLM knows your actual table and column names
+- 📊 **Complex Queries** - Handles JOINs, subqueries, aggregations, and analytics
+- 🛡️ **Transparent & Safe** - Shows generated SQL before execution
+- 🌐 **Cross-Platform** - macOS, Linux, and Windows support
+
+---
+
+## 📖 Documentation
+
+### **Getting Started**
+| Document | Description |
+|----------|-------------|
+| [🚀 Developer Quick Start](DEVELOPER_QUICK_START.md) | 30-second installation and first query |
+| [💡 Usage Examples](USAGE_EXAMPLES.md) | Complete query examples for all features |
+| [🧪 Testing Guide](TESTING_GUIDE.md) | Comprehensive testing instructions |
+
+### **Technical Documentation**
+| Document | Description |
+|----------|-------------|
+| [🏗️ Architecture](LLM_ENHANCED_GUIDE.md) | How LLM integration works with GitHub Copilot |
+| [📋 Implementation Summary](IMPLEMENTATION_SUMMARY.md) | Complete implementation overview |
+| [📁 Folder Structure](FOLDER_STRUCTURE.md) | Project organization and automated workflows |
+
+### **Distribution & Publishing**
+| Document | Description |
+|----------|-------------|
+| [📦 Distribution Guide](DISTRIBUTION_GUIDE.md) | Share with your team (network/web/git) |
+| [🌐 Registry Publishing](REGISTRY_PUBLISHING_GUIDE.md) | Publish to internal MCP registry |
+
+---
+
+## 🎯 Example Queries
+
+```
+@postgres what's the minimum salary of employees?
+@postgres show employees earning more than average salary
+@postgres create a table for product reviews with ratings
+@postgres find duplicate emails in the users table
+@postgres show top 10 products by revenue this month
+@postgres create a stored procedure to calculate shipping cost
+@postgres analyze the query plan for my slow query
+```
+
+📚 **More Examples:** [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│              VS Code                        │
+│  ┌───────────────────────────────────────┐ │
+│  │  PostgreSQL MCP Extension             │ │
+│  │  - Natural Language Input             │ │
+│  │  - GitHub Copilot LLM (vscode.lm API) │ │
+│  │  - Start/Stop/Status Controls         │ │
+│  └─────────────────┬─────────────────────┘ │
+└────────────────────┼───────────────────────┘
+                     │ HTTP (port 3000)
+                     ▼
+      ┌──────────────────────────────────┐
+      │   MCP Server (FastAPI)           │
+      │   - 8 PostgreSQL Tools           │
+      │   - Schema Discovery             │
+      │   - Query Execution              │
+      └────────────┬─────────────────────┘
+                   │ asyncpg
+                   ▼
+        ┌────────────────────────┐
+        │   PostgreSQL Database  │
+        └────────────────────────┘
+```
+
+📖 **Detailed Architecture:** [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md)
+
+---
+
+## 🛠️ Components
+
+### **1. MCP Server** (`mcp-server/`)
+- **Technology:** Python 3.8+, FastAPI, asyncpg
+- **Port:** 3000 (configurable)
+- **Tools:** 8 MCP tools for database operations
+- **Docs:** [mcp-server/README.md](mcp-server/README.md)
+
+### **2. VS Code Extension** (`vscode-extension/`)
+- **Technology:** TypeScript, VS Code Extension API
+- **Integration:** GitHub Copilot via `vscode.lm` API
+- **Features:** Chat participant `@postgres`, server management
+- **Docs:** [vscode-extension/README.md](vscode-extension/README.md)
+
+### **3. Distribution Package** (`postgres-mcp-package/`)
+- **Auto-generated** by `./create-package.sh`
+- Contains: MCP server, extension, docs, installers
+- **Output:** `postgres-mcp-v1.0.0.tar.gz`
+
+📁 **Full Structure:** [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md)
+
+---
+
+## 📦 Installation
+
+### **Option 1: Automated Install (Recommended)**
+
+```bash
+# Clone repository
+git clone https://github.com/syedmajidraza/mcp-postgres.git
+cd mcp-postgres
+
+# Run installer (macOS/Linux)
+./install.sh
+
+# Windows
+.\install.ps1
+```
+
+### **Option 2: From Distribution Package**
+
+```bash
+# Download and extract
+tar -xzf postgres-mcp-v1.0.0.tar.gz
+cd postgres-mcp-package
+./install.sh
+```
+
+### **Post-Installation**
+
+1. **Configure Database:**
+   ```bash
+   nano ~/.postgres-mcp/mcp-server/.env
+   ```
+   Update: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+
+2. **Install VS Code Extension:**
+   - Open VS Code
+   - `Cmd+Shift+P` → "Extensions: Install from VSIX"
+   - Select `postgres-mcp-copilot-1.0.0.vsix`
+
+3. **Reload VS Code:**
+   - `Cmd+Shift+P` → "Developer: Reload Window"
+
+📖 **Complete Guide:** [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md)
+
+---
+
+## 🎛️ VS Code Extension Features
+
+### **Commands** (Access via `Cmd+Shift+P` / `Ctrl+Shift+P`)
+
+- `PostgreSQL MCP: Start Server` - Start the MCP server
+- `PostgreSQL MCP: Stop Server` - Stop the MCP server
+- `PostgreSQL MCP: Restart Server` - Restart the MCP server
+- `PostgreSQL MCP: Show Server Status` - Display server and DB status
+- `PostgreSQL MCP: Configure Database Connection` - Update DB settings
+
+### **Status Bar**
+
+- 🟢 **PostgreSQL MCP: Running** - Server active, DB connected
+- 🟡 **PostgreSQL MCP: Stopped** - Server not running
+- 🔴 **PostgreSQL MCP: Error** - Server error (click for details)
+
+### **Chat Participant**
+
+Use `@postgres` in GitHub Copilot Chat to ask database questions in natural language.
+
+---
+
+## 🔧 MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_tables` | List all tables in a schema |
+| `describe_table` | Get detailed table schema information |
+| `query_database` | Execute SELECT queries |
+| `execute_sql` | Execute INSERT, UPDATE, DELETE, CREATE statements |
+| `create_table` | Create new tables with proper schema |
+| `create_stored_procedure` | Create stored procedures and functions |
+| `get_table_indexes` | Get all indexes for a table |
+| `analyze_query_plan` | Analyze query execution plans (EXPLAIN) |
+
+---
+
+## 🧪 Testing
+
+### **Test MCP Server**
+```bash
+cd mcp-server
+source venv/bin/activate
+python server.py
+
+# Test health endpoint
+curl http://127.0.0.1:3000/health
+```
+
+### **Test Extension**
+```bash
+# In VS Code
+# Press F5 to launch Extension Development Host
+# Type: @postgres show tables
+```
+
+📖 **Complete Testing Guide:** [TESTING_GUIDE.md](TESTING_GUIDE.md)
+
+---
+
+## 📊 How It Works
+
+### **Natural Language Query Flow:**
+
+1. **User Input:** `@postgres minimum salary of employees`
+2. **Extension:** Fetches database schema from MCP server
+3. **LLM (Copilot):** Receives schema + query, generates SQL
+4. **Extension:** Displays generated SQL: `SELECT MIN(salary) FROM employees`
+5. **MCP Server:** Executes SQL on PostgreSQL
+6. **User:** Sees results
+
+```
+User Question → Schema Fetch → LLM Generation → SQL Display → Execution → Results
+```
+
+📖 **Technical Details:** [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md)
+
+---
+
+## 🔐 Requirements
+
+- **Python:** 3.8 or higher
+- **Node.js:** 18+ (for extension development)
+- **PostgreSQL:** 10.0 or higher
+- **VS Code:** 1.80.0 or higher
+- **GitHub Copilot:** Active subscription required
+- **Operating System:** macOS, Linux, or Windows
+
+---
+
+## 🚀 Distribution
+
+### **For Your Team:**
+
+```bash
+# Create distribution package
+./create-package.sh
+
+# Share the tarball
+# postgres-mcp-v1.0.0.tar.gz (836 KB)
+```
+
+**Distribution Options:**
+- Network share / file server
+- Internal web server
+- Internal Git repository
+- Internal npm registry
+- Internal MCP registry
+
+📦 **Distribution Guide:** [DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md)  
+🌐 **Registry Publishing:** [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md)
+
+---
+
+## 🔄 Update Workflow
+
+### **Making Changes:**
+
+```bash
+# 1. Edit source code
+nano mcp-server/server.py
+nano vscode-extension/src/extension.ts
+
+# 2. Compile extension (if changed)
+cd vscode-extension
+npm run compile
+npm run package
+
+# 3. Rebuild distribution (AUTOMATIC)
+cd ..
+./create-package.sh
+
+# ✅ Done! Package updated with all changes
+```
+
+📁 **Detailed Workflow:** [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md#making-changes--updates)
+
+---
+
+## 📝 Configuration
+
+### **MCP Server** (`~/.postgres-mcp/mcp-server/.env`)
 
 ```env
 DB_HOST=localhost
-DB_PORT=5431
-DB_NAME=AdventureWorks
+DB_PORT=5432
+DB_NAME=your_database
 DB_USER=postgres
-DB_PASSWORD=your_password_here
+DB_PASSWORD=your_password
+
+SERVER_HOST=127.0.0.1
+SERVER_PORT=3000
 ```
 
-#### Step 3: Test the MCP Server
+### **VS Code Extension Settings**
 
-```bash
-# Start the server
-python server.py
-
-# Or use uvicorn directly
-uvicorn server:app --host 127.0.0.1 --port 3000
-```
-
-The server should start at `http://127.0.0.1:3000`
-
-You can test it by visiting:
-- Health check: `http://127.0.0.1:3000/health`
-- List tools: `http://127.0.0.1:3000/mcp/v1/tools`
-
-#### Step 4: Install VS Code Extension
-
-```bash
-cd ../vscode-extension
-
-# Install dependencies
-npm install
-
-# Compile the extension
-npm run compile
-
-# Package the extension
-npm run package
-```
-
-This will create a `.vsix` file that you can install in VS Code.
-
-#### Step 5: Install the Extension in VS Code
-
-1. Open VS Code
-2. Press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
-3. Type "Extensions: Install from VSIX"
-4. Select the generated `.vsix` file
-
-#### Step 6: Configure the Extension
-
-1. Open VS Code settings (`Cmd+,` or `Ctrl+,`)
-2. Search for "PostgreSQL MCP"
-3. Configure your database connection:
-   - Host: `localhost`
-   - Port: `5431`
-   - Database: `AdventureWorks`
-   - User: `postgres`
-   - Password: (your password)
-
-Or use the command palette:
-- Press `Cmd+Shift+P` / `Ctrl+Shift+P`
-- Run "PostgreSQL MCP: Configure Database Connection"
-
-## Usage
-
-### Starting the MCP Server
-
-The server can start automatically when VS Code starts (if configured), or manually:
-
-**Via Command Palette:**
-- Press `Cmd+Shift+P` / `Ctrl+Shift+P`
-- Run "PostgreSQL MCP: Start Server"
-
-**Via Settings:**
-Set `postgresMcp.server.autoStart` to `true` for automatic startup
-
-### Using with GitHub Copilot Chat
-
-Once the extension is installed and the server is running, you can use the `@postgres` chat participant in GitHub Copilot:
-
-1. Open GitHub Copilot Chat panel
-2. Type `@postgres` followed by your question
-
-**Examples:**
-
-```
-@postgres List all tables in the database
-
-@postgres Describe the customers table
-
-@postgres Query all users where age > 25
-
-@postgres Create a table called products with id, name, and price columns
-
-@postgres Show me the indexes on the orders table
-
-@postgres Explain the query plan for SELECT * FROM large_table WHERE id = 1
-```
-
-### Available Commands
-
-- `@postgres /query` - Execute a SQL query
-- `@postgres /tables` - List all tables
-- `@postgres /describe` - Describe a table structure
-- `@postgres /create` - Create a table or stored procedure
-
-### Available MCP Tools
-
-The server provides the following tools:
-
-1. **query_database** - Execute SELECT queries
-2. **execute_sql** - Execute any SQL statement
-3. **create_table** - Create a new table
-4. **create_stored_procedure** - Create stored procedures/functions
-5. **list_tables** - List all tables in a schema
-6. **describe_table** - Get table structure
-7. **get_table_indexes** - Get table indexes
-8. **analyze_query_plan** - Analyze query execution plan
-
-## Managing the Server
-
-### Check Server Status
-
-- Via Status Bar: Click the PostgreSQL MCP status indicator
-- Via Command: Run "PostgreSQL MCP: Show Server Status"
-
-### Stop the Server
-
-- Via Command: Run "PostgreSQL MCP: Stop Server"
-
-### Restart the Server
-
-- Via Command: Run "PostgreSQL MCP: Restart Server"
-
-## Troubleshooting
-
-### Server won't start
-
-1. Check Python is installed: `python3 --version`
-2. Check dependencies are installed: `pip list`
-3. Check the Output panel in VS Code (View > Output > PostgreSQL MCP)
-4. Verify database credentials in settings
-
-### Can't connect to database
-
-1. Verify PostgreSQL is running
-2. Check database credentials
-3. Verify database port (default: 5431 for your AdventureWorks database)
-4. Check firewall settings
-
-### Extension not working with Copilot
-
-1. Ensure GitHub Copilot extension is installed and activated
-2. Restart VS Code after installing the extension
-3. Check that the MCP server is running (status bar indicator)
-4. Review the Output panel for errors
-
-### Database connection errors
-
-1. Check PostgreSQL is running: `psql -h localhost -p 5431 -U postgres -d AdventureWorks`
-2. Verify credentials in `.env` file or VS Code settings
-3. Check database logs for connection errors
-
-## Configuration Reference
-
-### Server Configuration (.env)
-
-```env
-# Database connection
-DB_HOST=localhost          # PostgreSQL host
-DB_PORT=5431              # PostgreSQL port
-DB_NAME=AdventureWorks    # Database name
-DB_USER=postgres          # Database user
-DB_PASSWORD=              # Database password
-
-# Server settings
-SERVER_HOST=127.0.0.1     # Server bind address
-SERVER_PORT=3000          # Server port
-
-# Connection pool (optional)
-POOL_MIN_SIZE=2           # Minimum pool connections
-POOL_MAX_SIZE=10          # Maximum pool connections
-```
-
-### VS Code Extension Settings
-
-- `postgresMcp.database.host` - Database host (default: localhost)
-- `postgresMcp.database.port` - Database port (default: 5431)
-- `postgresMcp.database.name` - Database name (default: AdventureWorks)
-- `postgresMcp.database.user` - Database user (default: postgres)
-- `postgresMcp.database.password` - Database password
+- `postgresMcp.database.*` - Database connection settings
 - `postgresMcp.server.port` - MCP server port (default: 3000)
-- `postgresMcp.server.autoStart` - Auto-start server (default: true)
-- `postgresMcp.pythonPath` - Path to Python executable (default: python3)
+- `postgresMcp.server.autoStart` - Auto-start on VS Code launch
+- `postgresMcp.pythonPath` - Path to Python executable
 
-## Development
+---
 
-### MCP Server Development
+## 🆘 Troubleshooting
 
-```bash
-cd mcp-server
+### **Server won't start**
+- Check Python version: `python3 --version`
+- Check dependencies: `pip list`
+- View logs: View → Output → PostgreSQL MCP
 
-# Activate virtual environment
-source venv/bin/activate
+### **Can't connect to database**
+- Test manually: `psql -h localhost -p 5432 -U postgres -d your_db`
+- Check `.env` file credentials
+- Verify PostgreSQL is running
 
-# Install in development mode
-pip install -r requirements.txt
+### **Extension not working**
+- Ensure GitHub Copilot is active (check status bar)
+- Check server is running: `curl http://127.0.0.1:3000/health`
+- Restart VS Code
 
-# Run with hot reload
-uvicorn server:app --reload --host 127.0.0.1 --port 3000
-```
+📖 **Complete Troubleshooting:** [TESTING_GUIDE.md](TESTING_GUIDE.md#troubleshooting)
 
-### VS Code Extension Development
+---
 
-```bash
-cd vscode-extension
+## 🤝 Contributing
 
-# Install dependencies
-npm install
-
-# Compile with watch mode
-npm run watch
-
-# Press F5 in VS Code to launch Extension Development Host
-```
-
-## Security Considerations
-
-1. **Never commit credentials** - Keep `.env` files out of version control
-2. **Use environment variables** - Store sensitive data in environment variables
-3. **Limit database permissions** - Create a dedicated database user with minimal required permissions
-4. **Local connections only** - The MCP server binds to 127.0.0.1 by default
-5. **Secure password storage** - VS Code stores passwords in the system keychain
-
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
+Contributions are welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+4. Test thoroughly (see [TESTING_GUIDE.md](TESTING_GUIDE.md))
+5. Commit: `git commit -m "Add amazing feature"`
+6. Push: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
-## License
+---
 
-MIT License - See LICENSE file for details
+## 📄 License
 
-## Support
+MIT License - see [LICENSE](LICENSE) file for details.
 
-For issues, questions, or contributions:
-- Open an issue on GitHub
-- Check the troubleshooting section
-- Review the VS Code Output panel for logs
+---
 
-## Changelog
+## 🙏 Support
 
-### Version 1.0.0
-- Initial release
-- FastAPI-based MCP server
-- VS Code extension with Copilot integration
-- Support for basic database operations
-- Query execution and table management
-- Stored procedure creation
+- **Issues:** [GitHub Issues](https://github.com/syedmajidraza/mcp-postgres/issues)
+- **Documentation:** See links above
+- **Questions:** Open a GitHub Discussion
+
+---
+
+## 📚 Additional Resources
+
+### **All Documentation Files:**
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture details
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines  
+- [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md) - Quick installation
+- [DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md) - Team distribution
+- [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) - Project organization
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Implementation details
+- [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md) - LLM integration guide
+- [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md) - Registry publishing
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing guide
+- [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) - Query examples
+
+---
+
+## 🎉 Summary
+
+**What you get:**
+- ✅ Natural language SQL queries
+- ✅ 8 comprehensive database tools
+- ✅ VS Code extension with server management
+- ✅ GitHub Copilot LLM integration
+- ✅ Schema-aware SQL generation
+- ✅ Cross-platform support
+- ✅ Complete documentation
+- ✅ Easy distribution to your team
+
+**Ask your database questions like you're talking to a person! 🚀**
+
+---
+
+**Made with ❤️ by Syed Majid Raza**
+
+**Repository:** [https://github.com/syedmajidraza/mcp-postgres](https://github.com/syedmajidraza/mcp-postgres)
