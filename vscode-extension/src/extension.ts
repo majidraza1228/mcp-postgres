@@ -384,17 +384,20 @@ async function generateSQLWithLLM(naturalLanguageQuery: string, baseUrl: string)
             }
         }
 
-        // Get available language models
+        // Get available language models - respects user's model selection
         const models = await vscode.lm.selectChatModels({
-            vendor: 'copilot',
-            family: 'gpt-4'
+            vendor: 'copilot'
+            // No family restriction - uses user's preferred Copilot model
+            // User can select GPT-4o, GPT-4, GPT-3.5, o1, etc. in Copilot settings
         });
 
         if (models.length === 0) {
             throw new Error('GitHub Copilot is not available. Please ensure Copilot is activated.');
         }
 
+        // Use user's preferred model (first in list is their default selection)
         const model = models[0];
+        outputChannel.appendLine(`[LLM] Using model: ${model.family || model.id}`);
 
         // Create prompt for SQL generation
         const systemPrompt = `You are a PostgreSQL expert assistant. Convert natural language queries into valid PostgreSQL SQL statements.
