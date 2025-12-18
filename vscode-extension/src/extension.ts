@@ -233,12 +233,14 @@ async function handleChatRequest(
         } else {
             // For non-command requests, determine if it's direct SQL or natural language
             // Direct SQL patterns - must be at the START of the prompt
-            const isDirectSQL = /^(select|insert|update|delete|create\s+(table|index|view|procedure|function)|alter|drop)\s+/i.test(lowerPrompt);
+            // Covers: SELECT, INSERT, UPDATE, DELETE, CREATE (table/index/view/procedure/function/schema/sequence/trigger),
+            //         ALTER, DROP, TRUNCATE, GRANT, REVOKE, BEGIN, COMMIT, ROLLBACK, EXPLAIN, WITH (CTEs)
+            const isDirectSQL = /^(select|insert|update|delete|create\s+(table|index|view|procedure|function|schema|sequence|trigger|type|extension|database)|alter|drop|truncate|grant|revoke|begin|commit|rollback|savepoint|explain|analyze|vacuum|with\s+\w+\s+as)\s+/i.test(lowerPrompt);
 
             if (isDirectSQL) {
                 // Execute as direct SQL
                 const sqlLower = lowerPrompt;
-                if (sqlLower.startsWith('select')) {
+                if (sqlLower.startsWith('select') || sqlLower.startsWith('with') || sqlLower.startsWith('explain')) {
                     await handleQueryRequest(userPrompt, baseUrl, stream);
                 } else {
                     await handleModificationRequest(userPrompt, baseUrl, stream);
