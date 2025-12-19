@@ -39,11 +39,13 @@ nano ~/.postgres-mcp/mcp-server/.env
 - 🤖 **Natural Language to SQL** - Ask questions in plain English, powered by GitHub Copilot LLM
 - 🔧 **8 PostgreSQL Tools** - Complete database operations via MCP protocol
 - 🎛️ **VS Code Extension** - Start/stop/status controls with status bar integration
+- 🌐 **Web Chatbot (NEW!)** - Popup chat widget for users without VS Code - [See Demo](web-chatbot/README.md)
 - 🧠 **Schema-Aware** - LLM knows your actual table and column names
 - 📊 **Complex Queries** - Handles JOINs, subqueries, aggregations, and analytics
 - 🛠️ **Database Development** - Create tables, indexes, procedures, functions, triggers, and views
 - 🛡️ **Transparent & Safe** - Shows generated SQL before execution
-- 🌐 **Cross-Platform** - macOS, Linux, and Windows support
+- 🔌 **MCP Connection Status** - Real-time display of database connection info
+- 🎨 **Cross-Platform** - macOS, Linux, and Windows support
 
 ---
 
@@ -78,6 +80,14 @@ nano ~/.postgres-mcp/mcp-server/.env
 | [📦 Distribution Guide](docs/DISTRIBUTION_GUIDE.md) | Share with your team (network/web/git) |
 | [🌐 Registry Publishing](docs/REGISTRY_PUBLISHING_GUIDE.md) | Publish to internal MCP registry |
 | [🔄 Quick Update Instructions](docs/QUICK_UPDATE_INSTRUCTIONS.md) | How to quickly update the package |
+
+### **Web Chatbot (NEW!)**
+| Document | Description |
+|----------|-------------|
+| [🌐 Web Chatbot](web-chatbot/README.md) | Popup chat widget for non-VS Code users |
+| [📸 Screenshot Guide](web-chatbot/SCREENSHOT_GUIDE.md) | Visual overview and features |
+| [🔄 Upgrade Guide](web-chatbot/UPGRADE_GUIDE.md) | Migrating from full-page to popup |
+| [📝 Implementation Details](web-chatbot/POPUP_CHATBOT_CHANGES.md) | Technical changes in v2.0 |
 
 ### **Additional Resources**
 | Document | Description |

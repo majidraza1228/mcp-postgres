@@ -3,10 +3,12 @@ import { ChildProcess, spawn } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
+import * as http from 'http';
 
 let mcpServerProcess: ChildProcess | null = null;
 let outputChannel: vscode.OutputChannel;
 let statusBarItem: vscode.StatusBarItem;
+let copilotProxyServer: http.Server | null = null;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('PostgreSQL MCP extension is now active');
@@ -40,6 +42,119 @@ export function activate(context: vscode.ExtensionContext) {
     if (config.get('server.autoStart')) {
         startMcpServer(context);
     }
+
+    // Start Copilot API proxy server for web chatbot
+    startCopilotProxyServer();
+}
+
+// Copilot API Proxy Server for Web Chatbot
+function startCopilotProxyServer() {
+    const PROXY_PORT = 9000;
+
+    copilotProxyServer = http.createServer(async (req, res) => {
+        // Enable CORS
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+        if (req.method === 'OPTIONS') {
+            res.writeHead(200);
+            res.end();
+            return;
+        }
+
+        if (req.method === 'POST' && req.url === '/copilot/generate') {
+            let body = '';
+            req.on('data', chunk => body += chunk);
+            req.on('end', async () => {
+                try {
+                    const { query, schema } = JSON.parse(body);
+
+                    // Get GitHub Copilot LLM
+                    const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
+                    if (models.length === 0) {
+                        res.writeHead(503);
+                        res.end(JSON.stringify({ error: 'GitHub Copilot not available' }));
+                        return;
+                    }
+
+                    const model = models[0];
+
+                    // Create prompt for SQL generation
+                    const systemPrompt = `You are a PostgreSQL expert assistant. Convert natural language queries into valid PostgreSQL SQL statements.
+
+**Available Database Schema:**
+${schema || 'No schema provided'}
+
+**Instructions:**
+- Return ONLY the SQL statement, no explanations or markdown
+- Use proper PostgreSQL syntax
+- For queries returning data, use SELECT
+- For data modification, use INSERT, UPDATE, DELETE
+- For schema changes, use CREATE, ALTER, DROP
+- Add appropriate JOINs if multiple tables are needed
+- Add LIMIT clauses for safety when selecting large datasets
+- Use aggregate functions (COUNT, AVG, MIN, MAX, SUM) when appropriate
+
+**DDL Requirements:**
+- For CREATE TABLE: Include appropriate data types, PRIMARY KEY, FOREIGN KEY, and constraints
+- For CREATE INDEX: Use appropriate index types
+- For stored procedures/functions: Use CREATE OR REPLACE with proper PL/pgSQL syntax
+- For triggers: Include timing and events
+- For views: Use CREATE OR REPLACE VIEW
+
+**Complex Query Support:**
+- Use CTEs (WITH clause) for complex multi-step queries
+- Use window functions when appropriate
+- Use subqueries and correlated subqueries when needed
+
+**User Request:** ${query}
+
+**SQL:**`;
+
+                    const messages = [vscode.LanguageModelChatMessage.User(systemPrompt)];
+                    const chatResponse = await model.sendRequest(messages, {});
+
+                    let sqlQuery = '';
+                    for await (const fragment of chatResponse.text) {
+                        sqlQuery += fragment;
+                    }
+
+                    // Clean up the response
+                    sqlQuery = sqlQuery
+                        .trim()
+                        .replace(/^```sql\s*/i, '')
+                        .replace(/^```\s*/i, '')
+                        .replace(/\s*```$/i, '')
+                        .replace(/;+$/g, ';')
+                        .trim();
+
+                    if (sqlQuery.endsWith(';')) {
+                        sqlQuery = sqlQuery.slice(0, -1);
+                    }
+
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ sql: sqlQuery }));
+
+                } catch (error: any) {
+                    outputChannel.appendLine(`[Copilot Proxy Error]: ${error.message}`);
+                    res.writeHead(500);
+                    res.end(JSON.stringify({ error: error.message }));
+                }
+            });
+        } else if (req.method === 'GET' && req.url === '/health') {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'running', service: 'copilot-proxy' }));
+        } else {
+            res.writeHead(404);
+            res.end(JSON.stringify({ error: 'Not found' }));
+        }
+    });
+
+    copilotProxyServer.listen(PROXY_PORT, () => {
+        outputChannel.appendLine(`Copilot API Proxy running on port ${PROXY_PORT}`);
+        vscode.window.showInformationMessage(`Copilot API Proxy started on port ${PROXY_PORT}`);
+    });
 }
 
 async function startMcpServer(context: vscode.ExtensionContext) {
@@ -851,5 +966,8 @@ function formatAsTable(rows: any[]): string {
 export function deactivate() {
     if (mcpServerProcess) {
         mcpServerProcess.kill();
+    }
+    if (copilotProxyServer) {
+        copilotProxyServer.close();
     }
 }
