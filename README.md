@@ -71,6 +71,7 @@ nano ~/.postgres-mcp/mcp-server/.env
 | [🏗️ Architecture](docs/LLM_ENHANCED_GUIDE.md) | How LLM integration works with GitHub Copilot |
 | [📋 Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md) | Complete implementation overview |
 | [🔧 MCP Protocol Guide](docs/MCP_FASTAPI_IMPLEMENTATION_GUIDE.md) | MCP protocol implementation & LLM integration |
+| [⚖️ FastAPI-MCP Library Comparison](docs/FASTAPI_MCP_LIBRARY_COMPARISON.md) | Custom vs library approach analysis |
 | [📁 Folder Structure](docs/FOLDER_STRUCTURE.md) | Project organization and automated workflows |
 | [🎯 Model Selection](docs/MODEL_SELECTION_ANALYSIS.md) | GitHub Copilot model selection and preferences |
 
