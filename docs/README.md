@@ -1,255 +1,195 @@
-# PostgreSQL MCP - Documentation
+# PostgreSQL MCP Project Documentation
 
-Welcome to the PostgreSQL MCP documentation! This directory contains all guides, references, and technical documentation for the project.
-
----
-
-## 📚 Quick Navigation
-
-### **Start Here**
-- [🚀 Developer Quick Start](DEVELOPER_QUICK_START.md) - Get started in 30 seconds
-- [📘 Quick Reference Guide](QUICK_REFERENCE.md) - Everything you need in one page
-- [💡 Usage Examples](USAGE_EXAMPLES.md) - Query examples for all features
-
-### **Database Development**
-- [🗂️ DDL Examples](DDL_EXAMPLES.md) - **40+ examples** for creating tables, indexes, procedures, functions, triggers, views
-- [⚡ Database Development Guide](DATABASE_DEVELOPMENT_IMPROVEMENTS.md) - Technical enhancements and capabilities
+Complete documentation for the PostgreSQL Model Context Protocol (MCP) server and related components.
 
 ---
 
-## 📖 All Documentation
+## 📚 Documentation Structure
 
-### **Getting Started** 🚀
-| Document | Description |
-|----------|-------------|
-| [Developer Quick Start](DEVELOPER_QUICK_START.md) | 30-second installation and setup |
-| [Quick Start](QUICK_START.md) | Alternative quick start guide |
-| [Quick Reference](QUICK_REFERENCE.md) | Comprehensive one-page reference |
-| [Usage Examples](USAGE_EXAMPLES.md) | Complete query examples |
-| [Examples](EXAMPLES.md) | Additional code examples |
+This repository contains documentation organized by component:
 
-### **Database Development** 🗂️
-| Document | Description |
-|----------|-------------|
-| [DDL Examples](DDL_EXAMPLES.md) | 40+ examples: tables, indexes, procedures, functions, triggers, views |
-| [Database Development Improvements](DATABASE_DEVELOPMENT_IMPROVEMENTS.md) | Production DDL capabilities and enhancements |
+### **Root Documentation**
+- [Main README](../README.md) - Project overview and quick start
 
-### **Architecture & Design** 🏗️
-| Document | Description |
-|----------|-------------|
-| [Architecture Overview](ARCHITECTURE.md) | System architecture and design |
-| [LLM Enhanced Guide](LLM_ENHANCED_GUIDE.md) | How LLM integration works with GitHub Copilot |
-| [Implementation Summary](IMPLEMENTATION_SUMMARY.md) | Complete implementation details |
-| [MCP FastAPI Implementation](MCP_FASTAPI_IMPLEMENTATION_GUIDE.md) | MCP protocol implementation & LLM integration |
-| [Project Summary](PROJECT_SUMMARY.md) | High-level project overview |
-| [Folder Structure](FOLDER_STRUCTURE.md) | Project organization and workflows |
-| [Structure Overview](STRUCTURE.md) | Detailed structure documentation |
+### **Component Documentation**
 
-### **Technical Guides** 🔧
-| Document | Description |
-|----------|-------------|
-| [Model Selection Analysis](MODEL_SELECTION_ANALYSIS.md) | GitHub Copilot model selection and user preferences |
-| [SQL Detection Analysis](SQL_DETECTION_ANALYSIS.md) | Complete SQL statement detection coverage |
-| [SQL Detection Test Cases](SQL_DETECTION_TEST_CASES.md) | Test cases for SQL pattern detection |
-| [Comprehensive SQL Detection Update](COMPREHENSIVE_SQL_DETECTION_UPDATE.md) | SQL detection enhancements |
+#### 🔧 **Core Server Documentation**
+Located in `/docs/`:
 
-### **Testing** 🧪
-| Document | Description |
-|----------|-------------|
-| [Testing Guide](TESTING_GUIDE.md) | Comprehensive testing instructions |
-| [Testing](TESTING.md) | Additional testing information |
+**Getting Started**
+- [QUICK_START.md](QUICK_START.md) - Quick start guide
+- [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md) - Developer onboarding
+- [EXAMPLES.md](EXAMPLES.md) - Usage examples
+- [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) - Detailed usage patterns
 
-### **Distribution & Deployment** 📦
-| Document | Description |
-|----------|-------------|
-| [Distribution Guide](DISTRIBUTION_GUIDE.md) | Share with your team (network/web/git) |
-| [Registry Publishing Guide](REGISTRY_PUBLISHING_GUIDE.md) | Publish to internal MCP registry |
-| [Local Registry Setup](LOCAL_REGISTRY_SETUP.md) | Set up local MCP registry |
-| [Quick Update Instructions](QUICK_UPDATE_INSTRUCTIONS.md) | How to update the package quickly |
+**Architecture & Design**
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture overview
+- [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) - Project organization
+- [STRUCTURE.md](STRUCTURE.md) - Code structure
+- [MCP_FASTAPI_IMPLEMENTATION_GUIDE.md](MCP_FASTAPI_IMPLEMENTATION_GUIDE.md) - FastAPI + MCP implementation
 
-### **Bug Fixes & Improvements** 🐛
-| Document | Description |
-|----------|-------------|
-| [Bugfix: Natural Language Routing](BUGFIX_NATURAL_LANGUAGE_ROUTING.md) | Natural language query routing fixes |
+**Implementation Guides**
+- [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) - Core implementation summary
+- [IMPLEMENTATION_SUMMARY_ROOT.md](IMPLEMENTATION_SUMMARY_ROOT.md) - Root-level implementation details
+- [FASTAPI_MCP_LIBRARY_COMPARISON.md](FASTAPI_MCP_LIBRARY_COMPARISON.md) - Library comparison analysis
+- [MODEL_SELECTION_ANALYSIS.md](MODEL_SELECTION_ANALYSIS.md) - AI model selection guide
 
-### **Contributing** 🤝
-| Document | Description |
-|----------|-------------|
-| [Contributing Guidelines](CONTRIBUTING.md) | How to contribute to the project |
+**Database & SQL**
+- [DDL_EXAMPLES.md](DDL_EXAMPLES.md) - DDL operation examples
+- [DATABASE_DEVELOPMENT_IMPROVEMENTS.md](DATABASE_DEVELOPMENT_IMPROVEMENTS.md) - Database development best practices
+- [SQL_DETECTION_ANALYSIS.md](SQL_DETECTION_ANALYSIS.md) - SQL detection implementation
+- [SQL_DETECTION_TEST_CASES.md](SQL_DETECTION_TEST_CASES.md) - SQL detection test coverage
+- [COMPREHENSIVE_SQL_DETECTION_UPDATE.md](COMPREHENSIVE_SQL_DETECTION_UPDATE.md) - Enhanced SQL detection
 
-### **Reference** 📋
-| Document | Description |
-|----------|-------------|
-| [Index](INDEX.md) | Documentation index |
+**Testing**
+- [TESTING.md](TESTING.md) - Testing overview
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Detailed testing guide
+
+**Deployment & Distribution**
+- [DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md) - Package distribution
+- [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md) - NPM registry publishing
+- [LOCAL_REGISTRY_SETUP.md](LOCAL_REGISTRY_SETUP.md) - Local registry configuration
+
+**AI Integration**
+- [AI_PROVIDER_OPTIONS.md](AI_PROVIDER_OPTIONS.md) - AI provider comparison
+- [LLM_ENHANCED_GUIDE.md](LLM_ENHANCED_GUIDE.md) - LLM integration guide
+- [IMPROVED_WITH_LLM.md](IMPROVED_WITH_LLM.md) - LLM improvements
+
+**Reference**
+- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Quick command reference
+- [QUICK_UPDATE_INSTRUCTIONS.md](QUICK_UPDATE_INSTRUCTIONS.md) - Update procedures
+- [INDEX.md](INDEX.md) - Documentation index
+
+**Project Management**
+- [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) - Project overview
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [SCREENSHOT_INSTRUCTIONS.md](SCREENSHOT_INSTRUCTIONS.md) - Screenshot documentation
 
 ---
 
-## 🎯 Documentation by Task
+#### 🌐 **Web Chatbot Documentation**
+Located in `/docs/web-chatbot/`:
 
-### **I want to get started quickly**
-1. [Developer Quick Start](DEVELOPER_QUICK_START.md) - Installation and first query
-2. [Usage Examples](USAGE_EXAMPLES.md) - Try example queries
-3. [Quick Reference](QUICK_REFERENCE.md) - Learn all features
+- [README.md](web-chatbot/README.md) - Web chatbot documentation index
+- [TECHNICAL_ARCHITECTURE_EXPLAINED.md](web-chatbot/TECHNICAL_ARCHITECTURE_EXPLAINED.md) - **Technical deep dive** (675 lines)
+- [FINAL_STATE.md](web-chatbot/FINAL_STATE.md) - Production state
+- [AZURE_OPENAI_SETUP.md](web-chatbot/AZURE_OPENAI_SETUP.md) - Azure OpenAI setup
+- [CHANGELOG.md](web-chatbot/CHANGELOG.md) - Version history
+- [CLEANUP_SUMMARY.md](web-chatbot/CLEANUP_SUMMARY.md) - Codebase cleanup
+- [POPUP_CHATBOT_CHANGES.md](web-chatbot/POPUP_CHATBOT_CHANGES.md) - Popup features
+- [SCREENSHOT_GUIDE.md](web-chatbot/SCREENSHOT_GUIDE.md) - Visual guide
+- [UPGRADE_GUIDE.md](web-chatbot/UPGRADE_GUIDE.md) - Migration guide
 
-### **I want to create database objects**
-1. [DDL Examples](DDL_EXAMPLES.md) - See 40+ examples
-2. [Database Development Guide](DATABASE_DEVELOPMENT_IMPROVEMENTS.md) - Understand capabilities
-3. [Quick Reference](QUICK_REFERENCE.md) - Quick syntax reference
+**Web Chatbot AI Providers**
+- [WEB_CHATBOT_AI_PROVIDERS.md](WEB_CHATBOT_AI_PROVIDERS.md) - AI provider integration
+- [WEB_CHATBOT_GUIDE.md](WEB_CHATBOT_GUIDE.md) - Complete guide
+- [WEB_CHATBOT_SUMMARY.md](WEB_CHATBOT_SUMMARY.md) - Feature summary
 
-### **I want to understand the architecture**
-1. [LLM Enhanced Guide](LLM_ENHANCED_GUIDE.md) - How it works
-2. [Architecture Overview](ARCHITECTURE.md) - System design
-3. [MCP FastAPI Implementation](MCP_FASTAPI_IMPLEMENTATION_GUIDE.md) - Technical details
-
-### **I want to test or troubleshoot**
-1. [Testing Guide](TESTING_GUIDE.md) - Complete testing instructions
-2. [Usage Examples](USAGE_EXAMPLES.md) - Working examples to try
-
-### **I want to share with my team**
-1. [Distribution Guide](DISTRIBUTION_GUIDE.md) - Distribution options
-2. [Registry Publishing Guide](REGISTRY_PUBLISHING_GUIDE.md) - Registry publishing
-3. [Quick Update Instructions](QUICK_UPDATE_INSTRUCTIONS.md) - Update workflow
-
-### **I want to contribute**
-1. [Contributing Guidelines](CONTRIBUTING.md) - Contribution process
-2. [Testing Guide](TESTING_GUIDE.md) - How to test changes
-3. [Folder Structure](FOLDER_STRUCTURE.md) - Project organization
+**Microsoft Teams Integration**
+- [TEAMS_INTEGRATION_PLAN.md](TEAMS_INTEGRATION_PLAN.md) - Teams integration planning
+- [TEAMS_INTEGRATION_README.md](TEAMS_INTEGRATION_README.md) - Teams integration guide
+- [USING_AZURE_OPENAI.md](USING_AZURE_OPENAI.md) - Azure OpenAI usage
 
 ---
 
-## 🔍 Find What You Need
+#### 💻 **VS Code Extension Documentation**
+Located in `/docs/vscode-extension/`:
 
-### **By Feature**
+- [ARCHITECTURE_INLINE_MODE.md](vscode-extension/ARCHITECTURE_INLINE_MODE.md) - Inline mode architecture
+- [INLINE_MODE_GUIDE.md](vscode-extension/INLINE_MODE_GUIDE.md) - Complete guide
+- [INLINE_MODE_QUICKSTART.md](vscode-extension/INLINE_MODE_QUICKSTART.md) - Quick start
+- [INLINE_MODE_CHEATSHEET.md](vscode-extension/INLINE_MODE_CHEATSHEET.md) - Quick reference
+- [INLINE_MODE_IMPLEMENTATION_SUMMARY.md](INLINE_MODE_IMPLEMENTATION_SUMMARY.md) - Implementation details
 
-#### Natural Language Queries
-- [Usage Examples](USAGE_EXAMPLES.md)
-- [Quick Reference](QUICK_REFERENCE.md)
-- [LLM Enhanced Guide](LLM_ENHANCED_GUIDE.md)
+---
 
-#### Database Objects (Tables, Indexes, etc.)
-- [DDL Examples](DDL_EXAMPLES.md) ⭐ **Start here**
-- [Database Development Guide](DATABASE_DEVELOPMENT_IMPROVEMENTS.md)
-- [Quick Reference](QUICK_REFERENCE.md)
+#### 📷 **Images & Diagrams**
+Located in `/docs/images/`:
 
-#### Complex Queries (CTEs, Window Functions, etc.)
-- [DDL Examples](DDL_EXAMPLES.md) - See "Complex SQL Queries" section
-- [Usage Examples](USAGE_EXAMPLES.md)
+- [README.md](images/README.md) - Image documentation
+- `provider-llm.png` - AI provider architecture diagram
+- `provider-llm-diagram.svg` - SVG source for architecture diagram
+- `popup-chatbot-screenshot.png` - Web chatbot screenshot
 
-#### Stored Procedures & Functions
-- [DDL Examples](DDL_EXAMPLES.md) - See dedicated sections
-- [Database Development Guide](DATABASE_DEVELOPMENT_IMPROVEMENTS.md)
+---
 
-#### Triggers & Views
-- [DDL Examples](DDL_EXAMPLES.md) - See dedicated sections
+## 🎯 Quick Navigation by Role
 
-### **By Role**
+### **For Developers**
+1. [QUICK_START.md](QUICK_START.md) - Get started quickly
+2. [DEVELOPER_QUICK_START.md](DEVELOPER_QUICK_START.md) - Developer setup
+3. [ARCHITECTURE.md](ARCHITECTURE.md) - Understand the architecture
+4. [EXAMPLES.md](EXAMPLES.md) - See code examples
+5. [TESTING_GUIDE.md](TESTING_GUIDE.md) - Run tests
 
-#### Database Developer
-Must read:
-1. [DDL Examples](DDL_EXAMPLES.md)
-2. [Database Development Guide](DATABASE_DEVELOPMENT_IMPROVEMENTS.md)
-3. [Quick Reference](QUICK_REFERENCE.md)
+### **For Web Chatbot Users**
+1. [web-chatbot/README.md](web-chatbot/README.md) - Web chatbot overview
+2. [web-chatbot/TECHNICAL_ARCHITECTURE_EXPLAINED.md](web-chatbot/TECHNICAL_ARCHITECTURE_EXPLAINED.md) - Technical details
+3. [WEB_CHATBOT_GUIDE.md](WEB_CHATBOT_GUIDE.md) - Complete guide
 
-#### VS Code Extension User
-Must read:
-1. [Developer Quick Start](DEVELOPER_QUICK_START.md)
-2. [Usage Examples](USAGE_EXAMPLES.md)
-3. [Quick Reference](QUICK_REFERENCE.md)
+### **For VS Code Extension Users**
+1. [vscode-extension/INLINE_MODE_QUICKSTART.md](vscode-extension/INLINE_MODE_QUICKSTART.md) - Quick start
+2. [vscode-extension/INLINE_MODE_GUIDE.md](vscode-extension/INLINE_MODE_GUIDE.md) - Complete guide
+3. [vscode-extension/INLINE_MODE_CHEATSHEET.md](vscode-extension/INLINE_MODE_CHEATSHEET.md) - Commands
 
-#### System Administrator
-Must read:
-1. [Distribution Guide](DISTRIBUTION_GUIDE.md)
-2. [Registry Publishing Guide](REGISTRY_PUBLISHING_GUIDE.md)
-3. [Testing Guide](TESTING_GUIDE.md)
+### **For DevOps/Deployment**
+1. [DISTRIBUTION_GUIDE.md](DISTRIBUTION_GUIDE.md) - Package distribution
+2. [REGISTRY_PUBLISHING_GUIDE.md](REGISTRY_PUBLISHING_GUIDE.md) - Publishing
+3. [LOCAL_REGISTRY_SETUP.md](LOCAL_REGISTRY_SETUP.md) - Local setup
 
-#### Developer/Contributor
-Must read:
-1. [Architecture Overview](ARCHITECTURE.md)
-2. [LLM Enhanced Guide](LLM_ENHANCED_GUIDE.md)
-3. [Implementation Summary](IMPLEMENTATION_SUMMARY.md)
-4. [Contributing Guidelines](CONTRIBUTING.md)
+### **For Contributors**
+1. [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+2. [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) - Project organization
+3. [TESTING.md](TESTING.md) - Testing requirements
 
 ---
 
 ## 📊 Documentation Statistics
 
-- **Total Documents:** 28
-- **Getting Started Guides:** 5
-- **Technical Guides:** 15
-- **Examples & References:** 6
-- **Deployment Guides:** 4
+- **Total Documentation Files**: 65+ markdown files
+- **Web Chatbot Docs**: 17 files
+- **VS Code Extension Docs**: 5 files
+- **Core Server Docs**: 40+ files
+- **Images & Diagrams**: Architecture diagrams and screenshots
 
 ---
 
-## 💡 Recommended Reading Path
+## 🔄 Recent Updates
 
-### **For New Users:**
-```
-1. Developer Quick Start (5 min)
-   ↓
-2. Usage Examples (10 min)
-   ↓
-3. Quick Reference (browse as needed)
-   ↓
-4. DDL Examples (when creating database objects)
-```
-
-### **For Database Developers:**
-```
-1. Quick Reference (10 min)
-   ↓
-2. DDL Examples (20 min - read all sections)
-   ↓
-3. Database Development Guide (10 min)
-   ↓
-4. Usage Examples (try examples)
-```
-
-### **For System Administrators:**
-```
-1. Developer Quick Start (5 min)
-   ↓
-2. Distribution Guide (15 min)
-   ↓
-3. Registry Publishing Guide (10 min)
-   ↓
-4. Testing Guide (20 min)
-```
-
-### **For Contributors:**
-```
-1. Architecture Overview (15 min)
-   ↓
-2. LLM Enhanced Guide (20 min)
-   ↓
-3. Implementation Summary (15 min)
-   ↓
-4. Folder Structure (10 min)
-   ↓
-5. Contributing Guidelines (5 min)
-```
+**December 21, 2024**:
+- Reorganized all documentation into `/docs` folder
+- Created component-specific subdirectories (`web-chatbot/`, `vscode-extension/`, `images/`)
+- Added comprehensive documentation index
+- Updated all cross-references
+- Moved all root-level .md files (except main README) to docs/
 
 ---
 
-## 🔗 External Resources
+## 🤝 Contributing to Documentation
 
-- **PostgreSQL Documentation:** https://www.postgresql.org/docs/
-- **PL/pgSQL Guide:** https://www.postgresql.org/docs/current/plpgsql.html
-- **VS Code Extension API:** https://code.visualstudio.com/api
-- **GitHub Copilot:** https://github.com/features/copilot
-
----
-
-## 🆘 Need Help?
-
-1. **Check the docs** - Use the navigation above to find what you need
-2. **Search this directory** - All docs are in this folder
-3. **See examples** - [DDL Examples](DDL_EXAMPLES.md) and [Usage Examples](USAGE_EXAMPLES.md)
-4. **Read Quick Reference** - [Quick Reference](QUICK_REFERENCE.md) has everything
-5. **Open an issue** - GitHub Issues for bugs or questions
+When adding new documentation:
+1. Place files in appropriate `/docs` subdirectory:
+   - Core server docs: `/docs/`
+   - Web chatbot docs: `/docs/web-chatbot/`
+   - VS Code extension docs: `/docs/vscode-extension/`
+   - Images: `/docs/images/`
+2. Update this README.md with the new file
+3. Update component-specific README files
+4. Use clear headings and consistent formatting
+5. Include code examples where relevant
 
 ---
 
-**📍 You are here:** `docs/` directory
+## 📝 Documentation Standards
 
-**🏠 Return to:** [Main README](../README.md)
+- Use Markdown format
+- Include table of contents for long documents
+- Add diagrams and screenshots where helpful
+- Keep examples up-to-date
+- Cross-reference related documents
+- Update version history in CHANGELOG files
+
+---
+
+**Last Updated**: December 21, 2024
+**Maintained by**: PostgreSQL MCP Team
