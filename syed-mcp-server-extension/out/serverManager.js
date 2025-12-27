@@ -47,6 +47,38 @@ class ServerManager {
         this.registryClient = registryClient;
         this.outputChannel = vscode.window.createOutputChannel('MCP Server Manager');
     }
+    getInstallDir() {
+        const config = vscode.workspace.getConfiguration('mcpManager');
+        const installDirConfig = config.get('installDirectory') || '~/.mcp-servers';
+        return installDirConfig.replace('~', os.homedir());
+    }
+    async detectRunningServers() {
+        const installed = this.getInstalledServers();
+        for (const serverName of installed) {
+            const pidFile = path.join(this.getInstallDir(), serverName, '.mcp.pid');
+            if (fs.existsSync(pidFile)) {
+                try {
+                    const pid = parseInt(fs.readFileSync(pidFile, 'utf8'));
+                    // Check if process is actually running
+                    global.process.kill(pid, 0); // Signal 0 checks if process exists
+                    this.outputChannel.appendLine(`✓ Detected running server: ${serverName} (PID: ${pid})`);
+                    // Add to runningServers map (without actual process object since we didn't start it)
+                    this.runningServers.set(serverName, {
+                        name: serverName,
+                        process: null, // Can't capture existing process
+                        port: 3000,
+                        logs: [],
+                        config: await this.getServerConfig(serverName)
+                    });
+                }
+                catch {
+                    // Process not running, clean up PID file
+                    fs.unlinkSync(pidFile);
+                    this.outputChannel.appendLine(`Cleaned up stale PID file for ${serverName}`);
+                }
+            }
+        }
+    }
     async installServer(server) {
         const config = vscode.workspace.getConfiguration('mcpManager');
         const installDirConfig = config.get('installDirectory') || '~/.mcp-servers';
@@ -163,7 +195,17 @@ class ServerManager {
         serverProcess.on('exit', (code) => {
             this.outputChannel.appendLine(`[${serverName}] Exited with code ${code}`);
             this.runningServers.delete(serverName);
+            // Clean up PID file on exit
+            const pidFile = path.join(serverDir, '.mcp.pid');
+            if (fs.existsSync(pidFile)) {
+                fs.unlinkSync(pidFile);
+            }
         });
+        // Save PID to file
+        const pidFile = path.join(serverDir, '.mcp.pid');
+        if (serverProcess.pid) {
+            fs.writeFileSync(pidFile, serverProcess.pid.toString());
+        }
         this.runningServers.set(serverName, {
             name: serverName,
             process: serverProcess,
@@ -171,7 +213,7 @@ class ServerManager {
             logs,
             config: serverConfig
         });
-        this.outputChannel.appendLine(`✓ Started ${serverName}`);
+        this.outputChannel.appendLine(`✓ Started ${serverName} (PID: ${serverProcess.pid})`);
         this.outputChannel.show();
     }
     async stopServer(serverName) {
@@ -179,14 +221,21 @@ class ServerManager {
         if (!running) {
             throw new Error('Server is not running');
         }
-        running.process.kill('SIGTERM');
-        // Force kill after 5 seconds
-        setTimeout(() => {
-            if (this.runningServers.has(serverName)) {
-                running.process.kill('SIGKILL');
-            }
-        }, 5000);
+        if (running.process) {
+            running.process.kill('SIGTERM');
+            // Force kill after 5 seconds
+            setTimeout(() => {
+                if (this.runningServers.has(serverName) && running.process) {
+                    running.process.kill('SIGKILL');
+                }
+            }, 5000);
+        }
         this.runningServers.delete(serverName);
+        // Remove PID file
+        const pidFile = path.join(this.getInstallDir(), serverName, '.mcp.pid');
+        if (fs.existsSync(pidFile)) {
+            fs.unlinkSync(pidFile);
+        }
         this.outputChannel.appendLine(`✓ Stopped ${serverName}`);
     }
     async restartServer(serverName) {
@@ -211,7 +260,26 @@ class ServerManager {
         await this.context.secrets.delete(`mcp.${serverName}.config`);
     }
     isServerRunning(serverName) {
-        return this.runningServers.has(serverName);
+        // Check in-memory first
+        if (this.runningServers.has(serverName)) {
+            return true;
+        }
+        // Check PID file
+        const pidFile = path.join(this.getInstallDir(), serverName, '.mcp.pid');
+        if (fs.existsSync(pidFile)) {
+            try {
+                const pid = parseInt(fs.readFileSync(pidFile, 'utf8'));
+                // Check if process is actually running
+                global.process.kill(pid, 0); // Signal 0 checks if process exists
+                return true;
+            }
+            catch {
+                // Process not running, clean up PID file
+                fs.unlinkSync(pidFile);
+                return false;
+            }
+        }
+        return false;
     }
     getServerLogs(serverName) {
         const running = this.runningServers.get(serverName);

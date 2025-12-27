@@ -23,6 +23,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('mcpManager.registryServers', registryTreeProvider);
     vscode.window.registerTreeDataProvider('mcpManager.installedServers', installedTreeProvider);
 
+    // Detect already-running servers on startup
+    serverManager.detectRunningServers().then(() => {
+        installedTreeProvider.refresh();
+    }).catch(err => {
+        console.error('Failed to detect running servers:', err);
+    });
+
     // Register commands
     context.subscriptions.push(
         vscode.commands.registerCommand('mcpManager.refreshRegistry', () => {
