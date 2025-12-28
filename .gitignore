@@ -1,26 +1,49 @@
 # Python
-mcp-server/venv/
-mcp-server/__pycache__/
-mcp-server/*.pyc
-mcp-server/.env
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/venv/
+**/.env
+**/.venv/
+*.egg-info/
+dist/
+build/
 
 # Node
-vscode-extension/node_modules/
-vscode-extension/out/
-vscode-extension/dist/
+**/node_modules/
+**/out/
+**/dist/
+package-lock.json
 
-# Auto-generated package
-postgres-mcp-package/
+# Package archives
 *.tar.gz
+*.tgz
+*.zip
 
-# VS Code
-.vscode/
+# VS Code Extension
 *.vsix
+.vscode/
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+*~
+*.swp
+*.swo
 
 # Logs
 *.log
 logs/
+
+# Docker
+**/.dockerignore
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# IDE
+.idea/
+*.iml
