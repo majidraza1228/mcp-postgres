@@ -1,0 +1,23 @@
+{
+  "name": "markitdown-mcp",
+  "version": "1.0.0",
+  "description": "Convert any file (PDF, Word, Excel, Images, etc.) to Markdown using Microsoft's MarkItDown",
+  "author": "Syed Majid Raza",
+  "type": "python",
+  "tags": ["markdown", "converter", "pdf", "word", "excel", "document"],
+  "tools": [
+    {
+      "name": "convert_file_to_markdown",
+      "description": "Convert files to Markdown (PDF, DOCX, XLSX, PPTX, images, etc.)"
+    },
+    {
+      "name": "convert_url_to_markdown",
+      "description": "Convert webpages to Markdown"
+    },
+    {
+      "name": "supported_formats",
+      "description": "List all supported file formats"
+    }
+  ],
+  "env_vars": []
+}
