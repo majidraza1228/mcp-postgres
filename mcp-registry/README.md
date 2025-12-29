@@ -115,18 +115,101 @@ docker-compose restart
 podman-compose restart
 ```
 
-## Podman Setup
+## Alternative Setup (Without podman-compose)
 
-If you don't have `podman-compose` installed:
+If you don't have `podman-compose` installed, here are three options:
+
+### Option 1: Install podman-compose (Recommended)
 
 ```bash
 # Install podman-compose
 pip3 install podman-compose
 
-# OR create aliases to use Docker commands
+# Verify installation
+podman-compose --version
+```
+
+### Option 2: Use Docker Instead
+
+If you have Docker installed, simply use Docker commands:
+
+```bash
+# Start services
+docker-compose up -d
+
+# Check status
+docker ps
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### Option 3: Run Containers Manually with Podman
+
+If you want to use Podman without podman-compose:
+
+```bash
+# Create network
+podman network create mcp-network
+
+# Build and run backend
+cd backend
+podman build -t mcp-registry-backend .
+podman run -d \
+  --name mcp-registry-backend \
+  --network mcp-network \
+  -p 8000:8000 \
+  -v $(pwd)/../storage:/storage/mcp-servers:Z \
+  -v $(pwd):/app:Z \
+  -e STORAGE_PATH=/storage/mcp-servers \
+  --restart unless-stopped \
+  mcp-registry-backend
+
+# Build and run frontend
+cd ../frontend
+podman build -t mcp-registry-frontend .
+podman run -d \
+  --name mcp-registry-frontend \
+  --network mcp-network \
+  -p 3001:80 \
+  --restart unless-stopped \
+  mcp-registry-frontend
+
+cd ..
+```
+
+**To stop manually run containers:**
+```bash
+podman stop mcp-registry-backend mcp-registry-frontend
+podman rm mcp-registry-backend mcp-registry-frontend
+podman network rm mcp-network
+```
+
+**To check status:**
+```bash
+podman ps
+```
+
+**To view logs:**
+```bash
+podman logs mcp-registry-backend
+podman logs mcp-registry-frontend
+```
+
+### Option 4: Create Bash Aliases
+
+Create aliases to use Docker commands with Podman:
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
 echo "alias docker=podman" >> ~/.bashrc
 echo "alias docker-compose=podman-compose" >> ~/.bashrc
 source ~/.bashrc
-```
 
-Then use all Docker commands as normal!
+# Now use docker commands normally
+docker-compose up -d
+docker ps
+```
