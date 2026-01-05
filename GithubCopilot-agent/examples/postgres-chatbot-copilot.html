@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostgreSQL AI Assistant (GitHub Copilot)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 1000px;
+            height: 800px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #336791 0%, #2C5364 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .status {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .status-left {
+            display: flex;
+            gap: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.disconnected {
+            background: #dc3545;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #336791 0%, #2C5364 100%);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+        }
+
+        .message.assistant .message-content pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        .message.assistant .message-content code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+        }
+
+        .message.assistant .message-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 13px;
+        }
+
+        .message.assistant .message-content table th,
+        .message.assistant .message-content table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .message.assistant .message-content table th {
+            background: #336791;
+            color: white;
+            font-weight: 600;
+        }
+
+        .message.assistant .message-content table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .quick-actions {
+            padding: 12px 20px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+        }
+
+        .quick-btn {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .quick-btn:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .input-group textarea {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+            resize: vertical;
+            min-height: 50px;
+            max-height: 150px;
+        }
+
+        .input-group textarea:focus {
+            border-color: #336791;
+        }
+
+        .input-group button {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #336791 0%, #2C5364 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            align-self: flex-end;
+        }
+
+        .input-group button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .input-group button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .input-group button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ffffff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                <span>🐘</span>
+                <span>PostgreSQL AI Assistant</span>
+            </h1>
+            <p>Interact with your database using natural language</p>
+        </div>
+
+        <div class="status">
+            <div class="status-left">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Connecting...</span>
+                </div>
+                <div class="status-indicator">
+                    <span>🔌 Agent: <strong id="agentUrl">localhost:8080</strong></span>
+                </div>
+                <div class="status-indicator">
+                    <span>🗄️ Database: <strong id="dbName">-</strong></span>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <span id="toolCount">0 tools available</span>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="quickAction('List all tables')">📋 List Tables</button>
+            <button class="quick-btn" onclick="quickAction('Show table structures')">🏗️ Table Structures</button>
+            <button class="quick-btn" onclick="quickAction('Show me data from employees table')">👥 View Employees</button>
+            <button class="quick-btn" onclick="quickAction('What tables are available?')">❓ Available Tables</button>
+            <button class="quick-btn" onclick="quickAction('Show indexes')">🔍 Show Indexes</button>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant">
+                <div class="message-content">
+                    👋 <strong>Hello! I'm your PostgreSQL AI Assistant.</strong>
+                    <p style="margin-top: 12px;">I can help you with:</p>
+                    <ul style="margin-top: 8px; padding-left: 20px; line-height: 1.8;">
+                        <li><strong>Query data:</strong> "Show me all employees" or "Get product reviews"</li>
+                        <li><strong>Database operations:</strong> "List all tables" or "Describe the employees table"</li>
+                        <li><strong>Create tables:</strong> "Create a table for storing orders"</li>
+                        <li><strong>Analyze queries:</strong> "Explain the query plan for SELECT * FROM users"</li>
+                        <li><strong>Manage indexes:</strong> "Show indexes for the employees table"</li>
+                    </ul>
+                    <p style="margin-top: 12px; color: #666; font-size: 13px;">
+                        💡 Try the quick action buttons above or type your own question below!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-group">
+                <textarea id="messageInput" placeholder="Ask me anything about your database... (e.g., 'Show me all tables' or 'Query the employees table')"></textarea>
+                <button id="sendButton" onclick="sendMessage()">
+                    <span id="buttonText">Send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:9000';
+        let availableTools = [];
+
+        // Check server status and load info
+        async function checkStatus() {
+            try {
+                // Check health
+                const healthResponse = await fetch(`${API_URL}/health`);
+                const healthData = await healthResponse.json();
+
+                const isHealthy = healthData.status === 'healthy';
+                document.getElementById('statusText').textContent = isHealthy ? 'Connected' : 'Disconnected';
+                document.getElementById('statusDot').className = isHealthy ? 'status-dot' : 'status-dot disconnected';
+
+                if (isHealthy && healthData.mcpServer) {
+                    const dbConfig = healthData.mcpServer.config;
+                    if (dbConfig) {
+                        document.getElementById('dbName').textContent = `${dbConfig.database} @ ${dbConfig.host}:${dbConfig.port}`;
+                    }
+                }
+
+                // Get agent info and tools
+                const infoResponse = await fetch(`${API_URL}/agent/info`);
+                const infoData = await infoResponse.json();
+
+                if (infoData.availableTools) {
+                    availableTools = infoData.availableTools;
+                    document.getElementById('toolCount').textContent = `${availableTools.length} tools available`;
+                }
+
+            } catch (error) {
+                document.getElementById('statusText').textContent = 'Disconnected';
+                document.getElementById('statusDot').className = 'status-dot disconnected';
+                console.error('Status check failed:', error);
+            }
+        }
+
+        // Format query results as HTML table
+        function formatQueryResults(data) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                return '<p><em>No results returned</em></p>';
+            }
+
+            const keys = Object.keys(data[0]);
+            let html = '<table><thead><tr>';
+
+            keys.forEach(key => {
+                html += `<th>${key}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            data.forEach(row => {
+                html += '<tr>';
+                keys.forEach(key => {
+                    const value = row[key];
+                    html += `<td>${value !== null && value !== undefined ? value : '<em>NULL</em>'}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // Format response text
+        function formatResponse(text, rawData) {
+            // If we have raw data that looks like query results, format as table
+            if (rawData && rawData.result) {
+                const result = rawData.result;
+
+                // Check if it's table list
+                if (result.tables && Array.isArray(result.tables)) {
+                    return `<p><strong>Found ${result.count || result.tables.length} tables in schema '${result.schema || 'public'}':</strong></p>` +
+                           formatQueryResults(result.tables);
+                }
+
+                // Check if it's table description
+                if (result.columns && Array.isArray(result.columns)) {
+                    return `<p><strong>Table: ${result.table_name || 'Unknown'}</strong></p>` +
+                           formatQueryResults(result.columns);
+                }
+
+                // Check if it's query results
+                if (result.rows && Array.isArray(result.rows)) {
+                    return `<p><strong>Query Results (${result.row_count || result.rows.length} rows):</strong></p>` +
+                           formatQueryResults(result.rows);
+                }
+
+                // Check if it's indexes
+                if (result.indexes && Array.isArray(result.indexes)) {
+                    return `<p><strong>Indexes for table '${result.table_name}':</strong></p>` +
+                           formatQueryResults(result.indexes);
+                }
+            }
+
+            // Format code blocks
+            let formatted = String(text).replace(/```(\w+)?\n([\s\S]+?)```/g, '<pre><code>$2</code></pre>');
+
+            // Format inline code
+            formatted = formatted.replace(/`([^`]+)`/g, '<code style="background: #f8f9fa; padding: 2px 6px; border-radius: 4px;">$1</code>');
+
+            return formatted;
+        }
+
+        // Add message to chat
+        function addMessage(content, isUser = false, rawData = null) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+
+            if (isUser) {
+                contentDiv.textContent = content;
+            } else {
+                contentDiv.innerHTML = formatResponse(content, rawData);
+            }
+
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Quick action handler
+        function quickAction(message) {
+            document.getElementById('messageInput').value = message;
+            sendMessage();
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            const button = document.getElementById('sendButton');
+            const buttonText = document.getElementById('buttonText');
+
+            // Add user message
+            addMessage(message, true);
+            input.value = '';
+
+            // Show loading
+            button.disabled = true;
+            buttonText.innerHTML = '<span class="loading"></span>';
+
+            try {
+                // Try to intelligently route the request
+                let response, data;
+
+                // Check if it's a direct SQL query
+                if (message.toLowerCase().trim().startsWith('select ')) {
+                    response = await fetch(`${API_URL}/tool/query_database`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: message })
+                    });
+                }
+                // Check if asking about tables
+                else if (message.toLowerCase().includes('list tables') || message.toLowerCase().includes('show tables') || message.toLowerCase().includes('all tables')) {
+                    response = await fetch(`${API_URL}/tool/list_tables`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({})
+                    });
+                }
+                // Check if asking to describe a table
+                else if (message.toLowerCase().includes('describe') || message.toLowerCase().includes('structure')) {
+                    const tableMatch = message.match(/(?:describe|structure of|schema of)\s+(?:table\s+)?(\w+)/i);
+                    if (tableMatch) {
+                        response = await fetch(`${API_URL}/tool/describe_table`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ table_name: tableMatch[1] })
+                        });
+                    }
+                }
+
+                // If no specific tool matched, use chat endpoint
+                if (!response) {
+                    response = await fetch(`${API_URL}/chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+                }
+
+                data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `Server error: ${response.status}`);
+                }
+
+                // Handle different response formats
+                let responseText;
+                if (data.result) {
+                    // MCP tool response
+                    responseText = JSON.stringify(data.result, null, 2);
+                    addMessage(responseText, false, data);
+                } else if (data.response) {
+                    // Chat response
+                    addMessage(data.response, false);
+                } else {
+                    addMessage(JSON.stringify(data, null, 2), false);
+                }
+
+            } catch (error) {
+                addMessage(`<div class="error">❌ <strong>Error:</strong> ${error.message}</div>`, false);
+                console.error('Error:', error);
+            } finally {
+                button.disabled = false;
+                buttonText.textContent = 'Send';
+            }
+        }
+
+        // Enter key to send (Shift+Enter for new line)
+        document.getElementById('messageInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initial status check
+        checkStatus();
+        setInterval(checkStatus, 5000);
+    </script>
+</body>
+</html>

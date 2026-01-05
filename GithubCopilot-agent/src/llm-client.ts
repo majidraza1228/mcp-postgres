@@ -170,11 +170,13 @@ ${schema ? `Database Schema:\n${schema}\n` : ''}
 ${examples ? `Example Queries:\n${examples}\n` : ''}
 
 Rules:
-1. Return ONLY the SQL query, no explanations
+1. Return ONLY ONE SQL query, no explanations
 2. Use proper PostgreSQL syntax
 3. Include LIMIT clauses for safety
 4. Use appropriate JOINs when needed
-5. Handle NULL values properly`;
+5. Handle NULL values properly
+6. NEVER generate multiple SQL statements separated by semicolons
+7. If user asks to see tables, use: SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`;
 
     const messages: LLMMessage[] = [
       { role: 'system', content: systemPrompt },
@@ -189,6 +191,18 @@ Rules:
       sql = sql.replace(/```sql\n/, '').replace(/```$/, '').trim();
     } else if (sql.startsWith('```')) {
       sql = sql.replace(/```\n/, '').replace(/```$/, '').trim();
+    }
+
+    // Safety check: If multiple statements detected, take only the first one
+    if (sql.includes(';')) {
+      const statements = sql.split(';').map(s => s.trim()).filter(s => s.length > 0);
+      if (statements.length > 1) {
+        console.log(`[SQL Safety] Multiple statements detected, using only first: ${statements[0]}`);
+        sql = statements[0];
+      } else {
+        // Single statement with trailing semicolon - remove it
+        sql = statements[0];
+      }
     }
 
     return sql;

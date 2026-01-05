@@ -1,0 +1,62 @@
+{
+  "name": "copilot-web-bridge",
+  "displayName": "GitHub Copilot Web Bridge",
+  "description": "Bridge between web pages and GitHub Copilot for PostgreSQL queries",
+  "version": "1.0.0",
+  "publisher": "your-company",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copilotWebBridge.start",
+        "title": "Copilot Web Bridge: Start Server"
+      },
+      {
+        "command": "copilotWebBridge.stop",
+        "title": "Copilot Web Bridge: Stop Server"
+      },
+      {
+        "command": "copilotWebBridge.status",
+        "title": "Copilot Web Bridge: Show Status"
+      }
+    ],
+    "configuration": {
+      "title": "Copilot Web Bridge",
+      "properties": {
+        "copilotWebBridge.port": {
+          "type": "number",
+          "default": 9000,
+          "description": "Port for web bridge HTTP server"
+        },
+        "copilotWebBridge.mcpServerUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "PostgreSQL MCP Server URL"
+        },
+        "copilotWebBridge.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start server on VS Code startup"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.x",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {}
+}

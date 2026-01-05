@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "postgres-mcp": {
+      "command": "/Users/syedraza/postgres-mcp/mcp-server/venv/bin/python",
+      "args": ["/Users/syedraza/postgres-mcp/mcp-server/stdio_server.py"],
+      "env": {}
+    }
+  }
+}
