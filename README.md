@@ -6,7 +6,19 @@ Query your PostgreSQL database using natural language through a web interface po
 
 ## 🚀 Quick Start
 
-**Want to get started quickly?** → Read **[SETUP.md](SETUP.md)**
+**One-command startup:**
+
+```bash
+./start-all.sh
+```
+
+This single script will:
+1. ✅ Start MCP Server (port 3000)
+2. ✅ Start VS Code + Copilot Bridge (port 9001) - minimized in background
+3. ✅ Start Web Server (port 9000)
+4. ✅ Open chatbot in your browser automatically
+
+**Want detailed setup instructions?** → Read **[SETUP.md](SETUP.md)**
 
 ---
 
@@ -59,34 +71,38 @@ Web Browser → VS Code Extension → GitHub Copilot (GPT-4) → MCP Server → 
 
 **Full installation guide:** [SETUP.md](SETUP.md)
 
-**Quick install:**
+**Quick setup:**
 
-1. **Install MCP Server dependencies:**
+1. **Install dependencies:**
    ```bash
-   cd mcp-server
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install fastapi uvicorn asyncpg python-dotenv
+   # Python dependencies
+   pip3 install fastapi uvicorn asyncpg python-dotenv
+
+   # Node.js (for web server) - should already be installed
    ```
 
-2. **Configure database in `mcp-server/config.py`**
+2. **Configure database:**
+   ```bash
+   # Edit mcp-server/.env with your database credentials
+   nano mcp-server/.env
+   ```
 
 3. **Install VS Code extension:**
    ```bash
    code --install-extension copilot-web-bridge/copilot-web-bridge-1.0.0.vsix
    ```
 
-4. **Start servers and open chatbot:**
+4. **Start everything:**
    ```bash
-   # Terminal 1: Start MCP Server
-   cd mcp-server && python3 server.py
-
-   # Terminal 2: Start VS Code and extension
-   # In VS Code: Cmd+Shift+P → "Copilot Web Bridge: Start Server"
-
-   # Open web interface
-   open index.html
+   ./start-all.sh
    ```
+
+   The chatbot will open automatically in your browser!
+
+**To stop all services:**
+```bash
+./stop-all.sh
+```
 
 ---
 
@@ -156,6 +172,18 @@ The MCP server provides 8 tools for database operations:
 ---
 
 ## Screenshots
+
+### Startup - All Services Running
+
+When you run `./start-all.sh`, all three services start automatically:
+
+![All Services Running](docs/screenshot-startup.png)
+
+The script:
+- ✅ Starts MCP Server in background
+- ✅ Starts VS Code minimized (you won't see it)
+- ✅ Starts Web Server
+- ✅ Opens chatbot automatically
 
 ### Chatbot Interface
 
