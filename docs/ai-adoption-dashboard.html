@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Tools Adoption Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --border: #1e2230;
+    --text: #e8eaf0;
+    --muted: #5a6072;
+    --chatgpt: #10b981;
+    --copilot-gh: #6366f1;
+    --zoom: #2563eb;
+    --msft: #f59e0b;
+    --accent: #f0f4ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 28px 32px;
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.06) 0%, transparent 55%),
+                      radial-gradient(ellipse at 80% 100%, rgba(16,185,129,0.05) 0%, transparent 55%);
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+  }
+  .header p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--chatgpt);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--chatgpt);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* TOOL LEGEND */
+  .tools-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--tool-color);
+  }
+  .tool-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tool-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .tool-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .tool-users {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+  }
+  .tool-delta {
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+  }
+  .tool-delta.up { color: var(--chatgpt); }
+  .tool-delta.neutral { color: var(--muted); }
+  .tool-seats {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .tool-adopt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .adopt-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .adopt-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--tool-color);
+    transition: width 1s ease;
+  }
+  .adopt-pct { font-size: 10px; color: var(--muted); }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.3fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title span { color: var(--muted); font-weight: 400; font-size: 10px; }
+
+  /* TREND CHART */
+  .trend-chart {
+    position: relative;
+    height: 130px;
+    margin-top: 8px;
+  }
+  svg.chart { width: 100%; height: 100%; overflow: visible; }
+
+  /* DEPT BAR CHART */
+  .dept-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .dept-row { display: flex; align-items: center; gap: 10px; }
+  .dept-label { font-size: 10px; color: var(--muted); width: 72px; flex-shrink: 0; text-align: right; }
+  .dept-bar-bg { flex: 1; height: 20px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; position: relative; }
+  .dept-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    transition: width 1.2s ease;
+  }
+
+  /* POWER USERS */
+  .power-stat {
+    text-align: center;
+    padding: 12px 0;
+  }
+  .power-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .power-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .power-breakdown {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .pb-item { text-align: center; }
+  .pb-val { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .pb-key { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* BOTTOM GRID */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr;
+    gap: 14px;
+  }
+
+  /* DONUT */
+  .donut-wrap { display: flex; align-items: center; gap: 16px; }
+  .donut-legend { flex: 1; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .legend-text { font-size: 10px; color: var(--muted); flex: 1; }
+  .legend-val { font-size: 11px; color: var(--text); font-weight: 500; }
+
+  /* TOP GPTS */
+  .gpt-list { display: flex; flex-direction: column; gap: 8px; }
+  .gpt-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.025);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  .gpt-rank { font-size: 9px; color: var(--muted); width: 14px; text-align: center; }
+  .gpt-name { flex: 1; font-size: 11px; color: var(--text); }
+  .gpt-msgs { font-size: 10px; color: var(--muted); }
+  .gpt-bar { width: 50px; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .gpt-bar-fill { height: 100%; border-radius: 2px; background: var(--copilot-gh); }
+
+  /* ACTIVITY HEATMAP */
+  .heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 3px;
+    margin-top: 4px;
+  }
+  .hm-cell {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.04);
+  }
+  .hm-label-row {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 3px;
+    margin-bottom: 6px;
+  }
+  .hm-label { font-size: 8px; color: var(--muted); text-align: center; }
+  .day-labels { display: flex; flex-direction: column; justify-content: space-around; margin-bottom: 4px; }
+
+  /* STATUS PILLS */
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .stat-pill-val { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+  .stat-pill-key { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-note { font-size: 9px; color: var(--muted); }
+  .footer-tags { display: flex; gap: 6px; }
+  .tag {
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>AI Tools Adoption Dashboard</h1>
+    <p>Enterprise Intelligence · Q1 2025 · All Business Units</p>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    Live · Updated Feb 24, 2026
+  </div>
+</div>
+
+<!-- TOP TOOL CARDS -->
+<div class="tools-row">
+  <!-- ChatGPT -->
+  <div class="tool-card" style="--tool-color: var(--chatgpt)">
+    <div class="tool-name">ChatGPT Enterprise</div>
+    <div class="tool-meta">
+      <div>
+        <div class="tool-users">847</div>
+        <div class="tool-seats">of 1,200 seats provisioned</div>
+      </div>
+      <div class="tool-delta up">↑ 14%</div>
+    </div>
+    <div class="tool-adopt">
+      <div class="adopt-bar-bg">
+        <div class="adopt-bar-fill" style="width:70.6%"></div>
+      </div>
+      <div class="adopt-pct">70.6%</div>
+    </div>
+  </div>
+  <!-- GitHub Copilot -->
+  <div class="tool-card" style="--tool-color: var(--copilot-gh)">
+    <div class="tool-name">GitHub Copilot</div>
+    <div class="tool-meta">
+      <div>
+        <div class="tool-users">312</div>
+        <div class="tool-seats">of 380 dev seats</div>
+      </div>
+      <div class="tool-delta up">↑ 22%</div>
+    </div>
+    <div class="tool-adopt">
+      <div class="adopt-bar-bg">
+        <div class="adopt-bar-fill" style="width:82%"></div>
+      </div>
+      <div class="adopt-pct">82%</div>
+    </div>
+  </div>
+  <!-- Zoom AI -->
+  <div class="tool-card" style="--tool-color: var(--zoom)">
+    <div class="tool-name">Zoom AI Companion</div>
+    <div class="tool-meta">
+      <div>
+        <div class="tool-users">1,041</div>
+        <div class="tool-seats">of 1,500 seats</div>
+      </div>
+      <div class="tool-delta up">↑ 8%</div>
+    </div>
+    <div class="tool-adopt">
+      <div class="adopt-bar-bg">
+        <div class="adopt-bar-fill" style="width:69.4%"></div>
+      </div>
+      <div class="adopt-pct">69.4%</div>
+    </div>
+  </div>
+  <!-- Microsoft Copilot -->
+  <div class="tool-card" style="--tool-color: var(--msft)">
+    <div class="tool-name">Microsoft Copilot</div>
+    <div class="tool-meta">
+      <div>
+        <div class="tool-users">634</div>
+        <div class="tool-seats">of 1,200 M365 seats</div>
+      </div>
+      <div class="tool-delta neutral">↑ 5%</div>
+    </div>
+    <div class="tool-adopt">
+      <div class="adopt-bar-bg">
+        <div class="adopt-bar-fill" style="width:52.8%"></div>
+      </div>
+      <div class="adopt-pct">52.8%</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+  <!-- TREND CHART -->
+  <div class="panel">
+    <div class="panel-title">Monthly Active Users — Trend <span>Jan–Feb 2026</span></div>
+    <div class="trend-chart">
+      <svg class="chart" viewBox="0 0 520 130" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#6366f1" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="g4" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Grid lines -->
+        <line x1="0" y1="0" x2="520" y2="0" stroke="#1e2230" stroke-width="1"/>
+        <line x1="0" y1="32" x2="520" y2="32" stroke="#1e2230" stroke-width="1"/>
+        <line x1="0" y1="65" x2="520" y2="65" stroke="#1e2230" stroke-width="1"/>
+        <line x1="0" y1="98" x2="520" y2="98" stroke="#1e2230" stroke-width="1"/>
+        <line x1="0" y1="130" x2="520" y2="130" stroke="#1e2230" stroke-width="1"/>
+
+        <!-- ChatGPT area+line: values ~400,450,520,580,640,680,710,760,800,847 mapped 0-130 (max=1200) -->
+        <path d="M0,87 L57,82 L115,74 L173,67 L230,60 L288,56 L346,52 L404,46 L462,41 L520,37 L520,130 L0,130 Z" fill="url(#g1)"/>
+        <polyline points="0,87 57,82 115,74 173,67 230,60 288,56 346,52 404,46 462,41 520,37" fill="none" stroke="#10b981" stroke-width="2"/>
+
+        <!-- GitHub Copilot: 200,220,240,255,270,280,290,300,305,312 (max=380) mapped 0-130 -->
+        <path d="M0,82 L57,75 L115,67 L173,61 L230,54 L288,49 L346,43 L404,37 L462,34 L520,29 L520,130 L0,130 Z" fill="url(#g2)"/>
+        <polyline points="0,82 57,75 115,67 173,61 230,54 288,49 346,43 404,37 462,34 520,29" fill="none" stroke="#6366f1" stroke-width="2"/>
+
+        <!-- Zoom AI: 700,760,800,840,880,910,950,980,1010,1041 (max=1500) mapped 0-130 -->
+        <path d="M0,69 L57,65 L115,62 L173,58 L230,55 L288,52 L346,48 L404,45 L462,42 L520,40 L520,130 L0,130 Z" fill="url(#g3)"/>
+        <polyline points="0,69 57,65 115,62 173,58 230,55 288,52 346,48 404,45 462,42 520,40" fill="none" stroke="#2563eb" stroke-width="2" stroke-dasharray="4 2"/>
+
+        <!-- Microsoft Copilot: 380,410,440,470,500,530,560,590,615,634 (max=1200) mapped 0-130 -->
+        <path d="M0,89 L57,85 L115,81 L173,77 L230,72 L288,67 L346,62 L404,57 L462,53 L520,51 L520,130 L0,130 Z" fill="url(#g4)"/>
+        <polyline points="0,89 57,85 115,81 173,77 230,72 288,67 346,62 404,57 462,53 520,51" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 2"/>
+
+        <!-- X labels -->
+        <text x="0" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">May</text>
+        <text x="57" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Jun</text>
+        <text x="115" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Jul</text>
+        <text x="173" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Aug</text>
+        <text x="230" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Sep</text>
+        <text x="288" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Oct</text>
+        <text x="346" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Nov</text>
+        <text x="404" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Dec</text>
+        <text x="462" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Jan</text>
+        <text x="510" y="145" fill="#5a6072" font-size="9" font-family="DM Mono">Feb</text>
+      </svg>
+    </div>
+    <!-- Legend -->
+    <div style="display:flex;gap:16px;margin-top:18px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#5a6072">
+        <div style="width:20px;height:2px;background:#10b981;border-radius:1px"></div>ChatGPT
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#5a6072">
+        <div style="width:20px;height:2px;background:#6366f1;border-radius:1px"></div>GH Copilot
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#5a6072">
+        <div style="width:20px;height:2px;background:#2563eb;border-radius:1px;border-top:1px dashed #2563eb"></div>Zoom AI
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#5a6072">
+        <div style="width:20px;height:2px;background:#f59e0b;border-radius:1px"></div>MS Copilot
+      </div>
+    </div>
+  </div>
+
+  <!-- DEPT ADOPTION -->
+  <div class="panel">
+    <div class="panel-title">Adoption by Business Unit <span>Active users %</span></div>
+    <div class="dept-bars">
+      <div class="dept-row">
+        <div class="dept-label">Engineering</div>
+        <div class="dept-bar-bg">
+          <div class="dept-bar-fill" style="width:91%;background:linear-gradient(90deg,#6366f1,#818cf8)">91%</div>
+        </div>
+      </div>
+      <div class="dept-row">
+        <div class="dept-label">Product</div>
+        <div class="dept-bar-bg">
+          <div class="dept-bar-fill" style="width:86%;background:linear-gradient(90deg,#10b981,#34d399)">86%</div>
+        </div>
+      </div>
+      <div class="dept-row">
+        <div class="dept-label">Data & Analytics</div>
+        <div class="dept-bar-bg">
+          <div class="dept-bar-fill" style="width:84%;background:linear-gradient(90deg,#6366f1,#818cf8)">84%</div>
+        </div>
+      </div>
+      <div class="dept-row">
+        <div class="dept-label">Design</div>
+        <div class="dept-bar-bg">
+          <div class="dept-bar-fill" style="width:72%;background:linear-gradient(90deg,#10b981,#34d399)">72%</div>
+        </div>
+      </div>
+      <div class="dept-row">
+        <div class="dept-label">Marketing</div>
+        <div class="dept-bar-bg">
+          <div class="dept-bar-fill" style="width:65%;background:linear-gradient(90deg,#f59e0b,#fbbf24)">65%</div>
+        </div>
+      </div>
+      <div class="dept-row">
+        <div class="dept-label">Sales</div>
+        <div class="dept-bar-bg">
+          <div class="dept-bar-fill" style="width:58%;background:linear-gradient(90deg,#2563eb,#60a5fa)">58%</div>
+        </div>
+      </div>
+      <div class="dept-row">
+        <div class="dept-label">HR & Legal</div>
+        <div class="dept-bar-bg">
+          <div class="dept-bar-fill" style="width:41%;background:linear-gradient(90deg,#ef4444,#f87171)">41%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POWER USERS -->
+  <div class="panel">
+    <div class="panel-title">Power Users</div>
+    <div class="power-stat">
+      <div class="power-num">127</div>
+      <div class="power-label">Identified across all tools</div>
+    </div>
+    <div class="power-breakdown">
+      <div class="pb-item">
+        <div class="pb-val" style="color:#10b981">48</div>
+        <div class="pb-key">ChatGPT<br>75+msgs/wk</div>
+      </div>
+      <div class="pb-item">
+        <div class="pb-val" style="color:#6366f1">63</div>
+        <div class="pb-key">Copilot<br>Devs</div>
+      </div>
+      <div class="pb-item">
+        <div class="pb-val" style="color:#f59e0b">16</div>
+        <div class="pb-key">Multi-<br>Tool</div>
+      </div>
+    </div>
+
+    <div class="status-grid" style="margin-top:14px">
+      <div class="stat-pill">
+        <div class="stat-pill-val" style="color:#10b981">4.2k</div>
+        <div class="stat-pill-key">Msgs/Day</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-pill-val" style="color:#f59e0b">38%</div>
+        <div class="stat-pill-key">Tool Depth</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM GRID -->
+<div class="bottom-grid">
+  <!-- USER STATUS DONUT -->
+  <div class="panel">
+    <div class="panel-title">User Status — ChatGPT</div>
+    <div class="donut-wrap">
+      <svg width="90" height="90" viewBox="0 0 90 90" style="flex-shrink:0">
+        <circle cx="45" cy="45" r="35" fill="none" stroke="#1e2230" stroke-width="14"/>
+        <!-- Active: 70.6% → 220.7° of 360 = 220.7/360 * 219.9 circumference -->
+        <!-- circumference = 2π*35 ≈ 219.9 -->
+        <!-- Active 70.6% = 155.3 -->
+        <circle cx="45" cy="45" r="35" fill="none" stroke="#10b981" stroke-width="14"
+          stroke-dasharray="155.3 64.6" stroke-dashoffset="55" transform="rotate(-90 45 45)"/>
+        <circle cx="45" cy="45" r="35" fill="none" stroke="#f59e0b" stroke-width="14"
+          stroke-dasharray="42 177.9" stroke-dashoffset="-100.3" transform="rotate(-90 45 45)"/>
+        <circle cx="45" cy="45" r="35" fill="none" stroke="#ef4444" stroke-width="14"
+          stroke-dasharray="22.6 197.3" stroke-dashoffset="-142.3" transform="rotate(-90 45 45)"/>
+        <text x="45" y="49" text-anchor="middle" fill="#e8eaf0" font-size="13" font-family="Syne" font-weight="700">847</text>
+      </svg>
+      <div class="donut-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#10b981"></div>
+          <div class="legend-text">Active</div>
+          <div class="legend-val">598</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#f59e0b"></div>
+          <div class="legend-text">Inactive</div>
+          <div class="legend-val">193</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ef4444"></div>
+          <div class="legend-text">Pending</div>
+          <div class="legend-val">104</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#1e2230"></div>
+          <div class="legend-text">Seats unused</div>
+          <div class="legend-val">353</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">GitHub Copilot Suggestions</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="text-align:center">
+          <div style="font-family:Syne;font-size:18px;font-weight:700;color:#6366f1">84%</div>
+          <div style="font-size:9px;color:var(--muted)">Accept Rate</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:Syne;font-size:18px;font-weight:700;color:#818cf8">14.2k</div>
+          <div style="font-size:9px;color:var(--muted)">Suggestions/wk</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-family:Syne;font-size:18px;font-weight:700;color:#a5b4fc">3.1k</div>
+          <div style="font-size:9px;color:var(--muted)">Lines saved/wk</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP CUSTOM GPTs -->
+  <div class="panel">
+    <div class="panel-title">Top Custom GPTs <span>by messages</span></div>
+    <div class="gpt-list">
+      <div class="gpt-item">
+        <div class="gpt-rank">1</div>
+        <div class="gpt-name">Code Review Bot</div>
+        <div class="gpt-bar"><div class="gpt-bar-fill" style="width:100%;background:#10b981"></div></div>
+        <div class="gpt-msgs">4,812</div>
+      </div>
+      <div class="gpt-item">
+        <div class="gpt-rank">2</div>
+        <div class="gpt-name">Docs Writer</div>
+        <div class="gpt-bar"><div class="gpt-bar-fill" style="width:78%;background:#6366f1"></div></div>
+        <div class="gpt-msgs">3,741</div>
+      </div>
+      <div class="gpt-item">
+        <div class="gpt-rank">3</div>
+        <div class="gpt-name">Sales Coach GPT</div>
+        <div class="gpt-bar"><div class="gpt-bar-fill" style="width:61%;background:#2563eb"></div></div>
+        <div class="gpt-msgs">2,930</div>
+      </div>
+      <div class="gpt-item">
+        <div class="gpt-rank">4</div>
+        <div class="gpt-name">HR Policy Bot</div>
+        <div class="gpt-bar"><div class="gpt-bar-fill" style="width:49%;background:#f59e0b"></div></div>
+        <div class="gpt-msgs">2,361</div>
+      </div>
+      <div class="gpt-item">
+        <div class="gpt-rank">5</div>
+        <div class="gpt-name">Data Analyst</div>
+        <div class="gpt-bar"><div class="gpt-bar-fill" style="width:38%;background:#10b981"></div></div>
+        <div class="gpt-msgs">1,820</div>
+      </div>
+      <div class="gpt-item">
+        <div class="gpt-rank">6</div>
+        <div class="gpt-name">Sprint Planner</div>
+        <div class="gpt-bar"><div class="gpt-bar-fill" style="width:27%"></div></div>
+        <div class="gpt-msgs">1,298</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKLY ACTIVITY HEATMAP + KPIs -->
+  <div class="panel">
+    <div class="panel-title">Weekly Engagement Heatmap <span>ChatGPT · last 13 weeks</span></div>
+
+    <div class="hm-label-row">
+      <div class="hm-label">W1</div><div class="hm-label">W2</div><div class="hm-label">W3</div>
+      <div class="hm-label">W4</div><div class="hm-label">W5</div><div class="hm-label">W6</div>
+      <div class="hm-label">W7</div><div class="hm-label">W8</div><div class="hm-label">W9</div>
+      <div class="hm-label">W10</div><div class="hm-label">W11</div><div class="hm-label">W12</div>
+      <div class="hm-label">W13</div>
+    </div>
+
+    <!-- 5 rows (Mon-Fri) × 13 weeks, opacity = activity level -->
+    <script>
+      const heatData = [
+        [0.3,0.4,0.5,0.5,0.6,0.5,0.6,0.7,0.7,0.8,0.8,0.9,1.0],
+        [0.4,0.5,0.6,0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0],
+        [0.3,0.4,0.4,0.5,0.7,0.6,0.8,0.8,0.9,0.9,1.0,0.9,1.0],
+        [0.2,0.3,0.5,0.5,0.5,0.6,0.6,0.7,0.8,0.8,0.9,0.9,1.0],
+        [0.1,0.2,0.3,0.4,0.4,0.5,0.5,0.6,0.7,0.7,0.8,0.8,0.9],
+      ];
+      const days = ['Mon','Tue','Wed','Thu','Fri'];
+    </script>
+
+    <div id="heatmap-container" style="display:flex;gap:6px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:3px;padding-top:2px">
+        <div style="height:14px;font-size:8px;color:#5a6072;display:flex;align-items:center">Mon</div>
+        <div style="height:14px;font-size:8px;color:#5a6072;display:flex;align-items:center">Tue</div>
+        <div style="height:14px;font-size:8px;color:#5a6072;display:flex;align-items:center">Wed</div>
+        <div style="height:14px;font-size:8px;color:#5a6072;display:flex;align-items:center">Thu</div>
+        <div style="height:14px;font-size:8px;color:#5a6072;display:flex;align-items:center">Fri</div>
+      </div>
+      <div id="heatmap-grid" style="flex:1;display:flex;flex-direction:column;gap:3px"></div>
+    </div>
+
+    <script>
+      const grid = document.getElementById('heatmap-grid');
+      const d = [
+        [0.3,0.4,0.5,0.5,0.6,0.5,0.6,0.7,0.7,0.8,0.8,0.9,1.0],
+        [0.4,0.5,0.6,0.6,0.6,0.7,0.7,0.8,0.8,0.9,0.9,1.0,1.0],
+        [0.3,0.4,0.4,0.5,0.7,0.6,0.8,0.8,0.9,0.9,1.0,0.9,1.0],
+        [0.2,0.3,0.5,0.5,0.5,0.6,0.6,0.7,0.8,0.8,0.9,0.9,1.0],
+        [0.1,0.2,0.3,0.4,0.4,0.5,0.5,0.6,0.7,0.7,0.8,0.8,0.9],
+      ];
+      d.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.style.cssText = 'display:grid;grid-template-columns:repeat(13,1fr);gap:3px';
+        row.forEach(val => {
+          const cell = document.createElement('div');
+          const r = Math.round(16 + val * (16 * 2));
+          const g = Math.round(185 * val);
+          const b = Math.round(129 * val * 0.5);
+          cell.style.cssText = `height:14px;border-radius:2px;background:rgba(${r},${g},${b},${0.15 + val*0.85})`;
+          rowDiv.appendChild(cell);
+        });
+        grid.appendChild(rowDiv);
+      });
+    </script>
+
+    <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:9px;color:var(--muted)">
+      <span>Less</span>
+      <div style="display:flex;gap:2px">
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(16,40,30,0.3)"></div>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(16,80,40,0.5)"></div>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(16,140,60,0.7)"></div>
+        <div style="width:10px;height:10px;border-radius:2px;background:rgba(16,185,80,0.9)"></div>
+        <div style="width:10px;height:10px;border-radius:2px;background:#10b981"></div>
+      </div>
+      <span>More</span>
+      <div style="flex:1"></div>
+      <div style="display:flex;gap:12px">
+        <div><span style="color:#e8eaf0;font-family:Syne;font-weight:700">12.4</span> avg msgs/user/day</div>
+        <div><span style="color:#e8eaf0;font-family:Syne;font-weight:700">97%</span> Tue–Thu peak</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-note">Data sourced from ChatGPT Enterprise, GitHub Copilot Analytics, Zoom Admin Portal, M365 Copilot Dashboard · Refresh: nightly</div>
+  <div class="footer-tags">
+    <div class="tag">Q1 2026</div>
+    <div class="tag">1,200 Seats</div>
+    <div class="tag">4 Tools</div>
+    <div class="tag">Internal Use Only</div>
+  </div>
+</div>
+
+</body>
+</html>
