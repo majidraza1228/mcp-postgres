@@ -1,7 +1,7 @@
 # Design Document: Unified MCP Server (API, Database, and File-Based Integration)
 
-**Version:** 2.0
-**Date:** 2026-07-31
+**Version:** 3.1
+**Date:** 2026-08-04
 **Author:** Syed M
 **Status:** Draft for review
 
@@ -36,8 +36,9 @@ It also covers the design considerations specific to each domain, why an externa
 
 | Layer | Choice |
 |---|---|
-| Language / SDK | Python + FastMCP (`mcp` Python SDK) |
-| Transport | Streamable HTTP (remote, multi-client) with stdio supported for local/dev use |
+| MCP protocol version | **2026-07-28** (current spec as of this writing — stateless core; see Section 13) |
+| Language / SDK | Python + FastMCP (`mcp` Python SDK, Tier 1, updated for 2026-07-28) |
+| Transport | Streamable HTTP (remote, multi-client), stateless per 2026-07-28 — no `Mcp-Session-Id`; stdio still supported for local/dev use |
 | Schema validation | Pydantic v2 |
 | API Gateway | Kong / AWS API Gateway / Apigee (existing org standard) |
 | MCP Gateway | Self-hosted (e.g. Bifrost) or managed (Portkey, TrueFoundry, etc.) |
@@ -338,6 +339,8 @@ Every tool below takes the caller's `permission_token` (usually populated automa
 | Unbounded resource use | Pagination limits, file size caps, query timeouts, gateway-level rate limiting/quotas |
 | Destructive actions | Feature-flagged, annotated `destructiveHint: true`, require elevated role via gateway policy |
 | Unverified/rogue MCP servers | Only route through MCP servers listed in the internal MCP Registry sub-registry |
+| Token passthrough | Server never forwards a client/agent token unmodified to a downstream service; SSO DB sessions and any future backend OAuth must use a token minted/scoped for that specific downstream (Section 13.4) |
+| State handle hijacking | Any cross-call handle (e.g., export/pagination jobs) is non-deterministic, expiring, and bound server-side to `<user_id>:<handle>` — never treated as authentication on its own (Section 13.4) |
 | Data exfiltration via error messages | Errors are sanitized; internal exceptions logged server-side only |
 
 ---
@@ -381,6 +384,58 @@ Every tool below takes the caller's `permission_token` (usually populated automa
 
 ---
 
+## 13. MCP Protocol Update: the 2026-07-28 Specification
+
+On July 28, 2026, the MCP maintainers shipped `2026-07-28` — described as the biggest revision to the protocol since launch, centered on moving MCP from a stateful, bidirectional protocol to a **stateless, request/response protocol**. All four Tier 1 SDKs (TypeScript, Python, Go, C#) already speak it; Rust support is in beta. This design should target `2026-07-28` rather than the older `2025-11-25` baseline.
+
+### 13.1 What Changed
+
+| Change | What it means |
+|---|---|
+| **Stateless core — no handshake, no sessions** | The `initialize`/`initialized` exchange and the `Mcp-Session-Id` header are retired. Every request carries its protocol version, client identity, and capabilities in `_meta`. A new optional `server/discover` RPC replaces the mandatory handshake for clients that want capabilities up front. |
+| **Multi Round-Trip Requests (MRTR)** | Replaces the old server-initiated `elicitation/create`/`sampling/createMessage`/`roots/list` calls, which required a held-open stream. A tool that needs mid-call input now returns `resultType: "input_required"`; the client retries the same call with `inputResponses` attached. |
+| **Header-based routing** | Streamable HTTP requests must now include `Mcp-Method` and `Mcp-Name` headers, so gateways/WAFs/rate limiters can route and meter without parsing the JSON-RPC body. |
+| **Cacheable list results** | `tools/list`, `prompts/list`, `resources/list`, and `resources/read` responses carry `ttlMs` and `cacheScope`, so clients can cache tool catalogs instead of re-fetching them every session. |
+| **Authorization hardening** | Authorization servers must return `iss` per RFC 9207 and clients must validate it (closes an auth-server mix-up hole); `application_type` on Dynamic Client Registration (DCR) fixes `localhost` redirect failures for desktop/CLI clients; client credentials are now bound to the issuer that minted them. |
+| **DCR deprecated in favor of CIMD** | Dynamic Client Registration still works for backward compatibility but is formally deprecated; Client ID Metadata Documents (CIMD) are the forward path — the same trust/ownership model the MCP Registry already relies on (Section 5). |
+| **Tasks becomes a formal extension** | Tasks move out of the experimental core into the `io.modelcontextprotocol/tasks` extension, with poll-based `tasks/get` and a new `tasks/update`; change notifications move to an opt-in `subscriptions/listen` stream. |
+| **Formal deprecation policy** | Every deprecation now carries a minimum 12-month window. Roots, Sampling, and Logging are deprecated as of this release (still functional for at least 12 months); the legacy HTTP+SSE transport is deprecated with a year-long offramp. |
+
+### 13.2 How This Design Benefits
+
+| 2026-07-28 change | Benefit to this MCP server |
+|---|---|
+| Stateless core, no session storage | Directly simplifies Section 10 (Deployment): the server can scale horizontally behind a plain round-robin load balancer with no sticky sessions and no shared session store — removes an entire class of infrastructure this design would otherwise have needed. |
+| Header-based routing (`Mcp-Method`/`Mcp-Name`) | Strengthens the MCP Gateway's job in Section 4.2: tool-level allow/deny policy and rate limiting can be enforced on HTTP headers alone, without parsing every request body — faster and easier to audit. |
+| Cacheable list results (`ttlMs`, `cacheScope`) | Benefits the tool catalog in Section 7 directly: agents can cache the output of `api_list_endpoints`, `db_list_tables`, and `file_list_directory` instead of re-listing on every turn, cutting latency and backend load. |
+| MRTR (`input_required` / `inputResponses`) | A natural fit for the confirmation semantics already called for on `file_delete` and the feature-flagged write tools (Sections 6.4, 7): a destructive tool can now request explicit user confirmation mid-call over a stateless connection, instead of needing a held-open stream. |
+| RFC 9207 issuer validation, issuer-bound credentials | Reinforces the MCP Gateway's OAuth 2.1/OIDC validation (Section 8) against authorization-server mix-up attacks — a concrete hardening of "Agent identity spoofing" in the security table. |
+| CIMD replacing DCR | Aligns with the MCP Registry's namespace-ownership model (Section 5.2) — the same shift toward verifiable, metadata-backed identity for clients and servers alike. |
+| Tasks as a formal extension | Gives a standard mechanism for long-running operations this server may need later — large NAS document scans, bulk `db_run_readonly_query` exports — via poll-based `tasks/get` instead of a bespoke async pattern. |
+| 12-month deprecation window | Gives predictable lead time to migrate off Roots/Sampling/Logging and HTTP+SSE if this design ever used them; none are core to this server's three toolkits today. |
+
+### 13.3 Migration Notes for This Project
+
+- Pin the FastMCP/Python SDK version that speaks `2026-07-28` and update `MCP_PROTOCOL_VERSION` in server config; confirm the MCP Gateway (Section 4) and any client tooling used for evaluation (Section 11) are updated in lockstep, since the gateway is what actually terminates the handshake/session behavior being removed.
+- Nothing in this design depended on `Mcp-Session-Id` for cross-call state — per-user DB sessions (Section 6.3) and NAS permission tokens (Section 6.4) are already passed per request via gateway-forwarded identity, not a protocol session, so this migration is low-risk for this server specifically.
+- If any tool later needs to carry a handle across calls (e.g., a paginated export job), follow the new guidance directly: mint an explicit handle from the tool and have the model pass it back as an argument, rather than relying on transport-level session state — and see Section 13.4 for the security requirements that now apply to that pattern.
+
+### 13.4 Security Best Practices Update (New Attack Vectors)
+
+Alongside the protocol changes, the official MCP Security Best Practices guide was revised for `2026-07-28` with several attack vectors that bear directly on this design — this goes beyond the general "Authorization hardening" line in Section 13.1.
+
+| Attack vector | Requirement | Where it applies in this design |
+|---|---|---|
+| **Token passthrough (forbidden)** | MCP servers **MUST NOT** accept tokens not explicitly issued for them, and **MUST NOT** forward a client's token unmodified to a downstream service. | Directly refines Section 6.3's SSO database mode: when exchanging the gateway-forwarded identity for a DB session, the server must obtain/mint a token scoped to the database — not relay the agent's MCP-Gateway token as-is. Same principle applies if the API toolkit (6.2) ever moves off API keys/mTLS onto OAuth. |
+| **State handle hijacking (new, stateless-specific)** | Handles used for cross-call state **MUST NOT** be treated as authentication by themselves; they must be non-deterministic, expiring, and bound server-side to the authenticated user (e.g., keyed `<user_id>:<handle>`), with every inbound request re-verified. | Directly extends the handle-based pattern from Section 13.3 for bulk NAS scans / large `db_run_readonly_query` exports — this is now a concrete, non-negotiable requirement for that pattern, not just a suggestion. |
+| **Confused deputy problem (OAuth proxy servers)** | A server proxying OAuth to a third-party authorization server with a static client ID **MUST** implement per-client consent *before* forwarding to that third party — otherwise a stale consent cookie can let an attacker skip consent and steal an authorization code. | Only becomes relevant if a backend API later adds OAuth (per the migration note in 6.2, currently the backend has none); flagged here so the requirement isn't missed if that changes. |
+| **SSRF during OAuth metadata discovery** | Any component acting as an MCP *client* (e.g., if this server ever federates to other MCP servers) must validate/restrict URLs fetched during discovery — block private/reserved IP ranges including the `169.254.169.254` cloud metadata endpoint, enforce HTTPS, and not blindly follow redirects. | Relevant if the MCP Gateway's multi-server aggregation (Section 4.2) or a future federation pattern has this server call out to other MCP servers. |
+| **Scope minimization** | Avoid broad/wildcard scopes (`db:*`, `files:*`, `admin:*`); issue narrow, progressive scopes and step up to write/destructive scopes only when a tool actually needs them, logging each elevation. | Refines "least privilege by default" (Section 2.4) into a concrete gateway policy: the MCP Gateway (4.2) should scope tool grants per toolkit action, not per domain. |
+| **Mix-up attacks** | Confirms the RFC 9207 approach already noted in 13.1: binding the authorization response to the AS the client recorded before redirecting is what stops the attack — PKCE alone does not. | Reinforces Section 8's "Agent identity spoofing" mitigation. |
+| **CIMD trust policies** | Servers/gateways accepting Client ID Metadata Documents should apply domain-based trust policies (allowlists, reputation checks) rather than accepting any HTTPS `client_id`. | Extends the MCP Registry's namespace-ownership model (Section 5.2) to the MCP Gateway's own client-trust decisions. |
+
+---
+
 ## Sources
 
 - [Top 5 Enterprise MCP Gateway Solutions in 2026](https://www.getmaxim.ai/articles/top-5-enterprise-mcp-gateway-solutions-in-2026/)
@@ -398,3 +453,10 @@ Every tool below takes the caller's `permission_token` (usually populated automa
 - [GitHub - modelcontextprotocol/registry](https://github.com/modelcontextprotocol/registry)
 - [What is an MCP Registry? The Centralized Directory for AI Agents | Kong Inc.](https://konghq.com/blog/learning-center/what-is-an-mcp-registry)
 - [Getting Started With the Official MCP Registry API | Nordic APIs](https://nordicapis.com/getting-started-with-the-official-mcp-registry-api/)
+- [The 2026-07-28 Specification | Model Context Protocol Blog](https://blog.modelcontextprotocol.io/posts/2026-07-28/)
+- [The 2026-07-28 MCP Specification: Full Changelog](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
+- [MCP 2026-07-28 spec: what changed, what breaks · Stacktree](https://stacktr.ee/blog/mcp-2026-spec-changes)
+- [MCP Just Went Stateless — What the 2026 Spec Changes About Scaling | Microsoft Community Hub](https://techcommunity.microsoft.com/blog/appsonazureblog/mcp-just-went-stateless-%E2%80%94-what-the-2026-spec-changes-about-scaling-on-app-servic/4530222)
+- [Security Best Practices (2026-07-28) | Model Context Protocol Docs](https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices)
+- [MCP's Auth Hardening: What the Six New OAuth SEPs Fix, and What They Still Don't | Tigera](https://www.tigera.io/blog/mcps-auth-hardening-what-the-six-new-oauth-seps-fix-and-what-they-still-dont/)
+- [The biggest MCP spec update ships July 28: What changes for AI agent authentication | WorkOS](https://workos.com/blog/mcp-2026-spec-agent-authentication)
